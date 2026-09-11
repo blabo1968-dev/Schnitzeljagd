@@ -2,437 +2,115 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GPS Radar - Blankenhagen Spieleentwicklung</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schnitzeljagd</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow-x: hidden;
-            font-family: system-ui, -apple-system, sans-serif; 
-            background: #121212; 
-            color: white; 
-            text-align: center;
-        }
-
         body {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
         }
-
-        /* HEADER */
-        header {
-            background: #1a1a1a;
-            padding: 8px 10px;
-            border-bottom: 2px solid #00e5ff;
-            flex-shrink: 0;
-        }
-        header h2 {
-            font-size: clamp(14px, 3.5vw, 18px);
-            color: #00e5ff;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        header p {
-            font-size: clamp(10px, 2.2vw, 12px);
-            color: #aaa;
-            font-weight: bold;
-        }
-
-        /* HAUPTCONTAINER RESPONSIV */
-        .screen { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            flex: 1;
-            padding: 10px; 
-            width: 100%;
+        #setup-container, #game-container {
             max-width: 500px;
             margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        #gameScreen, #cameraScreen, #success { display: none; }
-
-        /* BUTTONS */
-        button { 
-            padding: 10px 16px; 
-            font-size: clamp(13px, 3vw, 15px); 
-            margin: 4px; 
-            cursor: pointer; 
-            background: #00e5ff; 
-            border: none; 
-            font-weight: bold; 
-            color: #000; 
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            border: 1px solid #ccc;
             border-radius: 6px;
-            touch-action: manipulation;
         }
-
-        /* RADAR VOLL DYNAMISCH */
-        #radar { 
-            width: min(55vw, 40vh, 220px); 
-            height: min(55vw, 40vh, 220px); 
-            border-radius: 50%; 
-            border: 2px solid #00e5ff; 
-            position: relative; 
-            margin: 10px auto; 
-            overflow: hidden; 
-            background: rgba(0,229,255,0.05); 
-            flex-shrink: 0;
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background-color: #28a745;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
         }
-        #sweep, #sweepGlow { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; pointer-events: none; }
-        #sweep { background: conic-gradient(from 0deg, rgba(0,229,255,0.4), transparent 60deg); }
-        
-        /* ZIELPUNKT: INTENSIV LEUCHTENDES GELB */
-        #target { 
-            width: 14px; 
-            height: 14px; 
-            background: #ffff00; 
-            border-radius: 50%; 
-            position: absolute; 
-            transform: translate(-50%, -50%); 
-            top: 50%; 
-            left: 50%; 
-            box-shadow: 0 0 12px #ffff00, 0 0 24px #ffff00; 
-            opacity: 0; 
-            transition: opacity 0.8s ease-out; 
+        #camera-preview {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 15px;
+            background: #000;
         }
-        
-        #errorBox { color: #ff5252; background: #2a0000; padding: 8px; border-radius: 5px; display: none; margin-bottom: 10px; font-size: 12px; white-space: pre-line; }
-        video { width: 100%; max-width: 350px; height: auto; border-radius: 8px; }
-        
-        /* SIMULATIONSPANEL */
-        #simControls { 
-            background: #222; 
-            border: 1px solid #444; 
-            padding: 8px; 
-            border-radius: 8px; 
-            margin-bottom: 10px; 
-            width: 100%; 
-            font-size: 12px;
-        }
-        .sim-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; max-width: 180px; margin: 5px auto; }
-        .sim-grid button { padding: 6px; font-size: 12px; margin: 0; }
-        
-        .info-text { font-size: clamp(12px, 2.5vw, 14px); margin: 2px 0; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h2>Blankenhagen Spieleentwicklung</h2>
-        <p>Prototyp Test – GPS Radar</p>
-    </header>
-
-    <div id="startScreen" class="screen">
-        <div id="errorBox"></div>
-        <h1 style="font-size: clamp(18px, 4vw, 24px); margin-bottom: 15px;">GPS RADAR PROTOTYP</h1>
-        <button id="startButton">SPIEL STARTEN</button>
+    <!-- 1. ADRESSEINGABE (Startbildschirm) -->
+    <div id="setup-container">
+        <h2>Schnitzeljagd Starten</h2>
+        <p>Gib das Ziel oder die Adresse ein:</p>
+        <input type="text" id="target-address" placeholder="z. B. Marktplatz 1, Plochingen">
+        <br>
+        <button onclick="startGame()">Starten & Kamera aktivieren</button>
     </div>
 
-    <div id="gameScreen" class="screen">
-        <div id="simControls">
-            <strong style="color: #00e5ff;">🎮 PC-TESTSIMULATION</strong><br>
-            <span style="color: #ccc; font-size: 11px;">Steuerung per Button oder Pfeiltasten:</span>
-            <div class="sim-grid">
-                <div></div><button onclick="simMove(0, 5)">▲ N</button><div></div>
-                <button onclick="simMove(-5, 0)">◄ W</button>
-                <button onclick="simMove(0, -5)">▼ S</button>
-                <button onclick="simMove(5, 0)">► O</button>
-            </div>
-            <button onclick="simRotate(-15)">↺ -15°</button>
-            <button onclick="simRotate(15)">↻ +15°</button>
-        </div>
-
-        <div id="status" style="font-weight: bold; color: #00e5ff; font-size: 13px;">SCHEIBE SCANNEN</div>
-        <div id="radar">
-            <div id="sweep"></div>
-            <div id="sweepGlow"></div>
-            <div id="target"></div>
-        </div>
-        <div class="info-text">Entfernung: <span id="distance" style="font-weight: bold;">-</span> m</div>
-        <div class="info-text" id="accuracy">GPS-Genauigkeit: -</div>
-        <div class="info-text" id="bearing">Zielrichtung: -</div>
-        <button id="cameraButton" style="display:none; background: #00ff66; margin-top: 10px;">KAMERA ÖFFNEN</button>
+    <!-- 2. SPIEL-OBERFLÄCHE (Kamera & GPS) -->
+    <div id="game-container" class="hidden">
+        <h3 id="display-target"></h3>
+        
+        <!-- Live-Videobild der Kamera -->
+        <video id="camera-preview" autoplay playsinline></video>
+        
+        <p id="status-info">Suche Standort und Ausrichtung...</p>
     </div>
 
-    <div id="cameraScreen" class="screen">
-        <video id="camera" autoplay playsinline></video>
-        <button id="foundButton" style="margin-top: 10px;">ZIEL GEFUNDEN</button>
-    </div>
-
-    <div id="success" class="screen">
-        <h1 style="color: #00ff66; font-size: clamp(20px, 5vw, 28px); margin-bottom: 10px;">HERZLICHEN GLÜCKWUNSCH!</h1>
-        <p style="margin-bottom: 15px; font-size: 14px;">Du hast das Ziel erfolgreich erreicht.</p>
-        <button id="again">NOCH EINMAL</button>
-    </div>
-
-<script>
-let TARGET_LAT = null;
-let TARGET_LON = null;
-const SPAWN_DISTANCE_METERS = 25;
-const TARGET_RADIUS = 20;
-const RADAR_RANGE = 100;
-
-let latitude = 48.715; 
-let longitude = 9.420;
-let accuracy = 5;      
-let targetBearing = 0;
-let heading = 0;
-let cameraStream = null;
-let sweepAngle = 0;
-let radarAnimation = null;
-let targetAngleRelative = 0;
-let hasPinged = false;
-
-/* REINER U-BOOT PING SOUND */
-let audioCtx = null;
-
-function playSonarPing() {
-    try {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === "suspended") {
-            audioCtx.resume();
-        }
-
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(1240, audioCtx.currentTime); // Klare Sonar-Frequenz
-
-        // Präziser Impuls: Kurzer Anschlag, sauber abklingender Ping
-        gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.0);
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        osc.start();
-        osc.stop(audioCtx.currentTime + 1.0);
-    } catch (e) {
-        console.log("Audio-Wiedergabe vom Browser blockiert.");
-    }
-}
-
-const startScreen = document.getElementById("startScreen");
-const gameScreen = document.getElementById("gameScreen");
-const cameraScreen = document.getElementById("cameraScreen");
-const success = document.getElementById("success");
-
-const startButton = document.getElementById("startButton");
-const cameraButton = document.getElementById("cameraButton");
-const foundButton = document.getElementById("foundButton");
-const againButton = document.getElementById("again");
-
-const errorBox = document.getElementById("errorBox");
-const status = document.getElementById("status");
-const distanceOutput = document.getElementById("distance");
-const accuracyOutput = document.getElementById("accuracy");
-const bearingOutput = document.getElementById("bearing");
-
-const target = document.getElementById("target");
-const radar = document.getElementById("radar");
-const sweep = document.getElementById("sweep");
-const sweepGlow = document.getElementById("sweepGlow");
-const camera = document.getElementById("camera");
-
-function setDynamicTarget(userLat, userLon) {
-    const metersPerDegree = 111000;
-    const latOffset = SPAWN_DISTANCE_METERS / metersPerDegree;
-    const lonOffset = SPAWN_DISTANCE_METERS / (metersPerDegree * Math.cos(userLat * Math.PI / 180));
-
-    TARGET_LAT = userLat + (latOffset * 0.7);
-    TARGET_LON = userLon + (lonOffset * 0.7);
-}
-
-startButton.addEventListener("click", startGame);
-
-function startGame(){
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-
-    startScreen.style.display = "none";
-    gameScreen.style.display = "flex";
-    setDynamicTarget(latitude, longitude);
-    startRadar();
-    updateGame();
-}
-
-function simMove(eastMeters, northMeters) {
-    const metersPerDegree = 111000;
-    latitude += northMeters / metersPerDegree;
-    longitude += eastMeters / (metersPerDegree * Math.cos(latitude * Math.PI / 180));
-    updateGame();
-}
-
-function simRotate(degrees) {
-    heading = normalize(heading + degrees);
-    updateRadar();
-}
-
-window.addEventListener("keydown", function(e) {
-    if (gameScreen.style.display === "flex") {
-        if (e.key === "ArrowUp") simMove(0, 2);
-        if (e.key === "ArrowDown") simMove(0, -2);
-        if (e.key === "ArrowLeft") simMove(-2, 0);
-        if (e.key === "ArrowRight") simMove(2, 0);
-    }
-});
-
-function updateGame(){
-    if(latitude === null || longitude === null || TARGET_LAT === null || TARGET_LON === null) return;
-
-    const distance = calculateDistance(latitude, longitude, TARGET_LAT, TARGET_LON);
-    targetBearing = calculateBearing(latitude, longitude, TARGET_LAT, TARGET_LON);
-
-    distanceOutput.textContent = Math.round(distance);
-    accuracyOutput.textContent = "GPS-Genauigkeit: ±" + accuracy + " m";
-    bearingOutput.textContent = "Zielrichtung: " + Math.round(targetBearing) + "°";
-
-    if(distance <= TARGET_RADIUS){
-        status.textContent = "🎯 ZIELBEREICH ERREICHT";
-        cameraButton.style.display = "block";
-    } else {
-        status.textContent = "🔎 ZIEL SUCHEN";
-        cameraButton.style.display = "none";
-    }
-
-    updateRadar();
-}
-
-function updateRadar(){
-    if(latitude === null || longitude === null || TARGET_LAT === null || TARGET_LON === null) return;
-
-    const distance = calculateDistance(latitude, longitude, TARGET_LAT, TARGET_LON);
-    const size = radar.clientWidth;
-    const center = size / 2;
-
-    let radius = (distance / RADAR_RANGE) * center;
-    radius = Math.min(radius, center - 10);
-
-    targetAngleRelative = normalize(targetBearing - heading);
-    const radians = targetAngleRelative * Math.PI / 180;
-
-    target.style.left = (center + Math.sin(radians) * radius) + "px";
-    target.style.top = (center - Math.cos(radians) * radius) + "px";
-}
-
-function startRadar(){
-    if(radarAnimation !== null){
-        cancelAnimationFrame(radarAnimation);
-        radarAnimation = null;
-    }
-
-    function animate(){
-        sweepAngle += 1.6;
-        if(sweepAngle >= 360) sweepAngle = 0;
-
-        sweep.style.transform = "rotate(" + sweepAngle + "deg)";
-        sweepGlow.style.transform = "rotate(" + sweepAngle + "deg)";
-
-        // PRÜFEN, OB RADARSTRAHL DAS ZIEL PASSIERT
-        let angleDiff = Math.abs(sweepAngle - targetAngleRelative);
-        if (angleDiff > 180) angleDiff = 360 - angleDiff;
-
-        if (angleDiff < 10) {
-            target.style.opacity = "1";
-            
-            if (!hasPinged) {
-                playSonarPing();
-                hasPinged = true;
+    <script>
+        async function startGame() {
+            const address = document.getElementById('target-address').value;
+            if (!address) {
+                alert('Bitte gib zuerst eine Adresse ein!');
+                return;
             }
-        } else {
-            target.style.opacity = "0";
-            if (angleDiff > 30) {
-                hasPinged = false;
+
+            document.getElementById('display-target').innerText = "Ziel: " + address;
+            document.getElementById('setup-container').classList.add('hidden');
+            document.getElementById('game-container').classList.remove('hidden');
+
+            // Kamera-Freigabe anfordern
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment" } // Nutzt die Rückkamera
+                });
+                const videoElement = document.getElementById('camera-preview');
+                videoElement.srcObject = stream;
+            } catch (err) {
+                alert("Kamera-Zugriff wurde nicht erlaubt oder wird nicht unterstützt: " + err.message);
+            }
+
+            // GPS-Standort abfragen
+            if ("geolocation" in navigator) {
+                navigator.geolocation.watchPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        document.getElementById('status-info').innerText = 
+                            `Aktueller Standort: ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+                    },
+                    (error) => {
+                        document.getElementById('status-info').innerText = "GPS-Fehler: " + error.message;
+                    },
+                    { enableHighAccuracy: true }
+                );
+            } else {
+                document.getElementById('status-info').innerText = "GPS wird von diesem Browser nicht unterstützt.";
             }
         }
-
-        radarAnimation = requestAnimationFrame(animate);
-    }
-    animate();
-}
-
-cameraButton.addEventListener("click", openCamera);
-
-async function openCamera(){
-    try{
-        cameraStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: { ideal: "environment" } },
-            audio: false
-        });
-        camera.srcObject = cameraStream;
-        gameScreen.style.display = "none";
-        cameraScreen.style.display = "flex";
-    } catch(error){
-        alert("Kamera-Simulation: Zielbereich geöffnet.");
-        gameScreen.style.display = "none";
-        cameraScreen.style.display = "flex";
-    }
-}
-
-foundButton.addEventListener("click", function(){
-    stopCamera();
-    cameraScreen.style.display = "none";
-    success.style.display = "flex";
-});
-
-function stopCamera(){
-    if(cameraStream){
-        cameraStream.getTracks().forEach(track => track.stop());
-        cameraStream = null;
-        camera.srcObject = null;
-    }
-}
-
-againButton.addEventListener("click", function(){
-    success.style.display = "none";
-    gameScreen.style.display = "flex";
-    cameraButton.style.display = "none";
-
-    TARGET_LAT = null;
-    TARGET_LON = null;
-    setDynamicTarget(latitude, longitude);
-
-    startRadar();
-    updateGame();
-});
-
-function calculateDistance(lat1, lon1, lat2, lon2){
-    const R = 6371000;
-    const p1 = lat1 * Math.PI / 180;
-    const p2 = lat2 * Math.PI / 180;
-    const dp = (lat2-lat1) * Math.PI / 180;
-    const dl = (lon2-lon1) * Math.PI / 180;
-
-    const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-}
-
-function calculateBearing(lat1, lon1, lat2, lon2){
-    const p1 = lat1 * Math.PI / 180;
-    const p2 = lat2 * Math.PI / 180;
-    const dl = (lon2-lon1) * Math.PI / 180;
-
-    const y = Math.sin(dl) * Math.cos(p2);
-    const x = Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(dl);
-
-    return normalize(Math.atan2(y,x) * 180 / Math.PI);
-}
-
-function normalize(value){
-    value = value % 360;
-    if(value < 0) value += 360;
-    return value;
-}
-</script>
-
+    </script>
 </body>
 </html>
