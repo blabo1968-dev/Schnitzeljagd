@@ -143,7 +143,7 @@
             <span style="color: #ccc; font-size: 11px;">(Straße, Hausnummer, Ort):</span>
             
             <div style="margin: 8px 0;">
-                <input type="text" id="addressInput" placeholder="z. B. Marktplatz 1, Stuttgart"><br>
+                <input type="text" id="addressInput" placeholder="z. B. Marktplatz 1, Plochingen"><br>
                 <button type="button" id="btnSearchAddress" style="padding: 6px 12px; font-size: 12px; margin-top: 4px;">ADRESSE SUCHEN</button>
             </div>
             
@@ -184,11 +184,13 @@
         <button id="cameraButton" style="display:none; background: #00ff66; margin-top: 10px;">KAMERA ANSICHT</button>
     </div>
 
+    <!-- KAMERA-BILDSCHIRM -->
     <div id="cameraScreen" class="screen">
         <video id="camera" autoplay playsinline muted></video>
         <button id="foundButton" style="margin-top: 10px;">ZIEL GEFUNDEN</button>
     </div>
 
+    <!-- ERFOLGS-BILDSCHIRM -->
     <div id="success" class="screen">
         <h1 style="color: #00ff66; font-size: clamp(20px, 5vw, 28px); margin-bottom: 10px;">HERZLICHEN GLÜCKWUNSCH!</h1>
         <p style="margin-bottom: 15px; font-size: 14px;">Du hast das Ziel erfolgreich erreicht.</p>
@@ -313,8 +315,9 @@ function setDynamicTarget(userLat, userLon) {
     TARGET_NAME = "Automatisches Testziel (25m)";
 }
 
+/* KAMERA UND SPIEL ZUSAMMEN STARTEN */
 startButton.addEventListener("click", async () => {
-    // Kamera-Berechtigung direkt anfordern
+    // 1. Kamera sofort beim Start-Klick anfragen
     try {
         cameraStream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: { ideal: "environment" } },
@@ -322,9 +325,10 @@ startButton.addEventListener("click", async () => {
         });
         camera.srcObject = cameraStream;
     } catch (err) {
-        console.log("Kamerazugriff verweigert oder nicht verfügbar.");
+        alert("Kamera-Zugriff konnte nicht aktiviert werden: " + err.message);
     }
     
+    // 2. Spiel & GPS starten
     startGame();
 });
 
