@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GPS Schnitzeljagd - Blankenhagen Spieleentwicklung</title>
+    <title>GPS Halloween Geisterjagd - Blankenhagen Spieleentwicklung</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
@@ -26,12 +26,12 @@
         header {
             background: #1a1a1a;
             padding: 8px 10px;
-            border-bottom: 2px solid #00e5ff;
+            border-bottom: 2px solid #ff6600;
             flex-shrink: 0;
         }
         header h2 {
             font-size: clamp(14px, 3.5vw, 18px);
-            color: #00e5ff;
+            color: #ff6600;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
@@ -59,7 +59,7 @@
             font-size: clamp(14px, 3.5vw, 16px); 
             margin: 8px; 
             cursor: pointer; 
-            background: #00e5ff; 
+            background: #ff6600; 
             border: none; 
             font-weight: bold; 
             color: #000; 
@@ -68,9 +68,9 @@
         }
 
         .station-badge {
-            background: rgba(0, 229, 255, 0.15);
-            border: 1px solid #00e5ff;
-            color: #00e5ff;
+            background: rgba(255, 102, 0, 0.15);
+            border: 1px solid #ff6600;
+            color: #ff6600;
             padding: 4px 12px;
             border-radius: 12px;
             font-size: 14px;
@@ -82,15 +82,15 @@
             width: min(65vw, 45vh, 260px); 
             height: min(65vw, 45vh, 260px); 
             border-radius: 50%; 
-            border: 2px solid #00e5ff; 
+            border: 2px solid #ff6600; 
             position: relative; 
             margin: 10px auto; 
             overflow: hidden; 
-            background: rgba(0,229,255,0.05); 
+            background: rgba(255,102,0,0.05); 
             flex-shrink: 0;
         }
         #sweep, #sweepGlow { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; pointer-events: none; }
-        #sweep { background: conic-gradient(from 0deg, rgba(0,229,255,0.4), transparent 60deg); }
+        #sweep { background: conic-gradient(from 0deg, rgba(255,102,0,0.4), transparent 60deg); }
         
         #target { 
             width: 16px; 
@@ -112,12 +112,14 @@
             max-width: 350px;
             height: 280px;
             margin: 10px auto;
+            overflow: hidden;
+            border-radius: 8px;
+            border: 2px solid #ff6600;
         }
 
         video { 
             width: 100%; 
             height: 100%; 
-            border-radius: 8px; 
             background: #222; 
             object-fit: cover; 
         }
@@ -128,7 +130,7 @@
             left: 50%;
             transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.7);
-            border: 1px solid #00e5ff;
+            border: 1px solid #ff6600;
             border-radius: 8px;
             padding: 6px 14px;
             display: flex;
@@ -136,7 +138,48 @@
             gap: 10px;
             font-weight: bold;
             font-size: 14px;
-            color: #00e5ff;
+            color: #ff6600;
+            z-index: 10;
+        }
+
+        /* Virtuelles Halloween Objekt (Geist/Kürbis) im Kamerabild */
+        #arObject {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 70px;
+            pointer-events: none;
+            transition: font-size 0.3s ease-out, opacity 0.3s ease-out;
+            filter: drop-shadow(0 0 15px rgba(255, 102, 0, 0.8));
+            animation: floatAnim 2.5s ease-in-out infinite alternate;
+            z-index: 5;
+        }
+
+        @keyframes floatAnim {
+            0% { transform: translate(-50%, -55%) scale(1); }
+            100% { transform: translate(-50%, -45%) scale(1.08); }
+        }
+
+        /* Saugeffekt-Animation (Version 3) */
+        .sucking {
+            animation: suckAnim 1.2s forwards !important;
+        }
+
+        @keyframes suckAnim {
+            0% {
+                transform: translate(-50%, -50%) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: translate(-50%, -50%) rotate(540deg) scale(0.5);
+                opacity: 0.8;
+                filter: drop-shadow(0 0 30px #ff6600);
+            }
+            100% {
+                transform: translate(-50%, 150%) rotate(1080deg) scale(0);
+                opacity: 0;
+            }
         }
 
         #cameraArrow {
@@ -162,27 +205,27 @@
 
     <header>
         <h2>Blankenhagen Spieleentwicklung</h2>
-        <p>Prototyp Test – Schnitzeljagd Radar</p>
+        <p>Halloween Geisterjagd – Prototyp</p>
     </header>
 
     <!-- START-BILDSCHIRM -->
     <div id="startScreen" class="screen">
-        <h1 style="font-size: clamp(18px, 4vw, 24px); margin-bottom: 15px;">SCHNITZELJAGD TESTSPIEL</h1>
+        <h1 style="font-size: clamp(18px, 4vw, 24px); margin-bottom: 15px; color: #ff6600;">🎃 HALLOWEEN GEISTERJAGD 👻</h1>
         
         <div class="control-panel" style="max-width: 340px;">
-            <strong style="color: #00e5ff; font-size: 15px;">🚩 SCHNELLER TEST-MODUS</strong><br><br>
+            <strong style="color: #ff6600; font-size: 15px;">🚩 SCHNELLER TEST-MODUS</strong><br><br>
             <span style="color: #ccc; font-size: 12px; line-height: 1.4;">
-                Es werden automatisch <strong>5 Test-Stationen</strong> in deiner unmittelbaren Umgebung generiert.
+                Spüre <strong>5 Geister & Kürbisse</strong> auf und sauge sie mit dem Geister-Staubsauger ein!
             </span>
         </div>
 
-        <button id="startButton">TESTSPIEL STARTEN</button>
+        <button id="startButton">GEISTERJAGD STARTEN</button>
     </div>
 
     <!-- SPIEL-BILDSCHIRM -->
     <div id="gameScreen" class="screen">
         <div id="stationBadge" class="station-badge">STATION 1 VON 5</div>
-        <div id="status" style="font-weight: bold; color: #00e5ff; font-size: 16px; margin-bottom: 5px;">🔎 ZIEL SUCHEN</div>
+        <div id="status" style="font-weight: bold; color: #ff6600; font-size: 16px; margin-bottom: 5px;">🔎 GEIST SUCHEN</div>
         
         <div id="radar">
             <div id="sweep"></div>
@@ -190,36 +233,43 @@
             <div id="target"></div>
         </div>
 
-        <div class="info-text">Entfernung: <span id="distance" style="font-weight: bold; color: #00e5ff;">-</span> m</div>
+        <div class="info-text">Entfernung: <span id="distance" style="font-weight: bold; color: #ff6600;">-</span> m</div>
         <div class="info-text" id="accuracy">GPS-Genauigkeit: -</div>
         <div class="info-text" id="bearing">Zielrichtung: -</div>
         
-        <button id="cameraToggleButton" style="background: #00e5ff; margin-top: 10px;">📷 KAMERA ANSCHALTEN</button>
+        <button id="cameraToggleButton" style="background: #ff6600; margin-top: 10px;">📷 KAMERA ANSCHALTEN</button>
     </div>
 
     <!-- KAMERA-BILDSCHIRM -->
     <div id="cameraScreen" class="screen">
         <div id="cameraStationBadge" class="station-badge">STATION 1 VON 5</div>
-        <h3 id="cameraHeaderTitle" style="color: #00e5ff; margin-bottom: 5px;">📷 KAMERA-SUCHE</h3>
+        <h3 id="cameraHeaderTitle" style="color: #ff6600; margin-bottom: 5px;">📷 KAMERA-SUCHE</h3>
         
         <div class="camera-container">
             <video id="camera" autoplay playsinline muted></video>
+            
             <div class="camera-overlay">
                 <span id="cameraArrow">⬆️</span>
                 <span id="cameraDistText">-- m</span>
             </div>
+
+            <!-- VIRTUELLES HALLOWEEN-OBJEKT -->
+            <div id="arObject">👻</div>
         </div>
 
         <div style="margin-top: 5px;">
-            <button id="cameraOffButton" style="background: #ff5252; color: #fff;">📷 KAMERA AUSSCHALTEN</button>
-            <button id="foundButton" style="background: #00ff66;">🎯 ZIEL GEFUNDEN</button>
+            <button id="cameraOffButton" style="background: #ff5252; color: #fff;">📷 ZURÜCK ZUM RADAR</button>
+            <button id="foundButton" style="background: #00ff66; color: #000;">🎯 GEIST EINSAUGEN</button>
         </div>
     </div>
 
     <!-- ERFOLGS-BILDSCHIRM -->
     <div id="success" class="screen">
-        <h1 style="color: #00ff66; font-size: clamp(20px, 5vw, 28px); margin-bottom: 10px;">SCHNITZELJAGD BEENDET!</h1>
-        <p style="margin-bottom: 15px; font-size: 14px;">Du hast alle 5 Test-Stationen erfolgreich gefunden.</p>
+        <h1 style="color: #ff6600; font-size: clamp(20px, 5vw, 28px); margin-bottom: 10px;">🎃 GEISTERJAGD BEENDET! 👻</h1>
+        <p style="margin-bottom: 15px; font-size: 14px; line-height: 1.5;">
+            Du hast alle Geister & Kürbisse erfolgreich eingesaugt!<br><br>
+            <strong style="color: #00ff66;">Hol dir deine Belohnung an der Theke ab! 🍬</strong>
+        </p>
         <button id="again">NEUES TESTSPIEL</button>
     </div>
 
@@ -230,6 +280,8 @@ const TOTAL_STATIONS = 5;
 const TARGET_RADIUS = 5; 
 const RADAR_RANGE = 100;
 
+const HALLOWEEN_ICONS = ["👻", "🎃", "👻", "🎃", "👻"];
+
 let latitude = null; 
 let longitude = null;
 let accuracy = 0;      
@@ -237,6 +289,7 @@ let targetBearing = 0;
 let heading = 0;
 let cameraStream = null;
 let isCameraActive = false;
+let isSucking = false;
 
 let sweepAngle = 0;
 let radarAnimation = null;
@@ -273,6 +326,37 @@ function playSonarPing() {
     }
 }
 
+// Staubsauger-Soundeffekt
+function playVacuumSound() {
+    try {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === "suspended") {
+            audioCtx.resume();
+        }
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.6);
+        osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 1.2);
+
+        gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.2);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 1.2);
+    } catch (e) {
+        console.log("Audio blockiert.");
+    }
+}
+
 const startScreen = document.getElementById("startScreen");
 const gameScreen = document.getElementById("gameScreen");
 const cameraScreen = document.getElementById("cameraScreen");
@@ -294,6 +378,7 @@ const cameraStationBadge = document.getElementById("cameraStationBadge");
 const cameraHeaderTitle = document.getElementById("cameraHeaderTitle");
 const cameraArrow = document.getElementById("cameraArrow");
 const cameraDistText = document.getElementById("cameraDistText");
+const arObject = document.getElementById("arObject");
 
 const target = document.getElementById("target");
 const radar = document.getElementById("radar");
@@ -305,7 +390,6 @@ function generateTestWaypoints(userLat, userLon) {
     waypoints = [];
     const metersPerDegree = 111000;
     
-    // Generiert 5 leicht versetzte Punkte im Bereich von 20m bis 60m
     const offsets = [
         { dn: 25, de: 15 },
         { dn: -20, de: 30 },
@@ -321,7 +405,8 @@ function generateTestWaypoints(userLat, userLon) {
         waypoints.push({
             id: i + 1,
             lat: userLat + latOffset,
-            lon: userLon + lonOffset
+            lon: userLon + lonOffset,
+            icon: HALLOWEEN_ICONS[i]
         });
     }
     currentIndex = 0;
@@ -388,11 +473,11 @@ function updateGame(){
     cameraStationBadge.textContent = badgeText;
 
     if(distance <= TARGET_RADIUS){
-        status.textContent = "🎯 ZIELBEREICH ERREICHT";
+        status.textContent = "🎯 GEIST/KÜRBIS ERREICHT!";
         status.style.color = "#00ff66";
     } else {
-        status.textContent = "🔎 ZIEL SUCHEN";
-        status.style.color = "#00e5ff";
+        status.textContent = "🔎 GEIST SUCHEN";
+        status.style.color = "#ff6600";
     }
 
     updateRadar();
@@ -418,7 +503,7 @@ function updateRadar(){
 }
 
 function updateCameraOverlay() {
-    if (!isCameraActive || latitude === null || longitude === null || waypoints.length === 0) return;
+    if (!isCameraActive || latitude === null || longitude === null || waypoints.length === 0 || isSucking) return;
 
     const currentTarget = waypoints[currentIndex];
     const distance = calculateDistance(latitude, longitude, currentTarget.lat, currentTarget.lon);
@@ -428,12 +513,23 @@ function updateCameraOverlay() {
     cameraArrow.style.transform = `rotate(${targetAngleRelative}deg)`;
     cameraDistText.textContent = distRounded + " m";
 
+    arObject.textContent = currentTarget.icon;
+
     if (distance <= TARGET_RADIUS) {
-        cameraHeaderTitle.textContent = "🎯 ZIELBEREICH ERREICHT";
+        cameraHeaderTitle.textContent = "🎯 GEIST BEREIT ZUM SAUGEN!";
         cameraHeaderTitle.style.color = "#00ff66";
+        arObject.style.opacity = "1";
+        arObject.style.fontSize = "90px";
+    } else if (distance <= 15) {
+        cameraHeaderTitle.textContent = "📷 KAMERA-SUCHE";
+        cameraHeaderTitle.style.color = "#ff6600";
+        arObject.style.opacity = "0.7";
+        arObject.style.fontSize = "65px";
     } else {
         cameraHeaderTitle.textContent = "📷 KAMERA-SUCHE";
-        cameraHeaderTitle.style.color = "#00e5ff";
+        cameraHeaderTitle.style.color = "#ff6600";
+        arObject.style.opacity = "0.35";
+        arObject.style.fontSize = "45px";
     }
 }
 
@@ -507,8 +603,22 @@ async function toggleCamera(){
     }
 }
 
+// Staubsauger-Mechanik (Version 3)
 foundButton.addEventListener("click", function(){
-    advanceToNextStation();
+    if (isSucking) return;
+    
+    isSucking = true;
+    foundButton.disabled = true;
+    
+    playVacuumSound();
+    arObject.classList.add("sucking");
+
+    setTimeout(() => {
+        arObject.classList.remove("sucking");
+        isSucking = false;
+        foundButton.disabled = false;
+        advanceToNextStation();
+    }, 1200);
 });
 
 function advanceToNextStation() {
