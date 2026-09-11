@@ -23,7 +23,6 @@
             justify-content: space-between;
         }
 
-        /* HEADER */
         header {
             background: #1a1a1a;
             padding: 8px 10px;
@@ -109,7 +108,7 @@
             transition: opacity 0.8s ease-out; 
         }
         
-        video { width: 100%; max-width: 350px; height: auto; border-radius: 8px; background: #000; }
+        video { width: 100%; max-width: 350px; height: 260px; border-radius: 8px; background: #222; object-fit: cover; }
         
         .control-panel { 
             background: #222; 
@@ -134,7 +133,7 @@
         <p>Prototyp Test – GPS Radar</p>
     </header>
 
-    <!-- START-BILDSCHIRM MIT ADRESS-SUCHE -->
+    <!-- START-BILDSCHIRM -->
     <div id="startScreen" class="screen">
         <h1 style="font-size: clamp(18px, 4vw, 24px); margin-bottom: 15px;">GPS RADAR PROTOTYP</h1>
         
@@ -181,13 +180,14 @@
         <div class="info-text">Entfernung: <span id="distance" style="font-weight: bold;">-</span> m</div>
         <div class="info-text" id="accuracy">GPS-Genauigkeit: -</div>
         <div class="info-text" id="bearing">Zielrichtung: -</div>
-        <button id="cameraButton" style="display:none; background: #00ff66; margin-top: 10px;">KAMERA ANSICHT</button>
+        <button id="cameraButton" style="background: #00ff66; margin-top: 10px;">KAMERA JETZT ÖFFNEN</button>
     </div>
 
     <!-- KAMERA-BILDSCHIRM -->
     <div id="cameraScreen" class="screen">
+        <h3 style="color: #00ff66; margin-bottom: 10px;">🎯 ZIELBEREICH ERREICHT</h3>
         <video id="camera" autoplay playsinline muted></video>
-        <button id="foundButton" style="margin-top: 10px;">ZIEL GEFUNDEN</button>
+        <button id="foundButton" style="margin-top: 15px; background: #00ff66;">ZIEL GEFUNDEN</button>
     </div>
 
     <!-- ERFOLGS-BILDSCHIRM -->
@@ -267,7 +267,6 @@ const sweep = document.getElementById("sweep");
 const sweepGlow = document.getElementById("sweepGlow");
 const camera = document.getElementById("camera");
 
-/* AUTOMATISCHE ADRESS-SUCHE (NOMINATIM) */
 document.getElementById("btnSearchAddress").addEventListener("click", searchAddress);
 
 async function searchAddress() {
@@ -315,22 +314,25 @@ function setDynamicTarget(userLat, userLon) {
     TARGET_NAME = "Automatisches Testziel (25m)";
 }
 
-/* KAMERA UND SPIEL ZUSAMMEN STARTEN */
 startButton.addEventListener("click", async () => {
-    // 1. Kamera sofort beim Start-Klick anfragen
-    try {
-        cameraStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: { ideal: "environment" } },
-            audio: false
-        });
-        camera.srcObject = cameraStream;
-    } catch (err) {
-        alert("Kamera-Zugriff konnte nicht aktiviert werden: " + err.message);
-    }
-    
-    // 2. Spiel & GPS starten
+    // Kamera vorab initialisieren
+    await initCameraStream();
     startGame();
 });
+
+async function initCameraStream() {
+    try {
+        if (!cameraStream) {
+            cameraStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { ideal: "environment" } },
+                audio: false
+            });
+            camera.srcObject = cameraStream;
+        }
+    } catch (err) {
+        console.log("Kamera Vorab-Aktivierung:", err.message);
+    }
+}
 
 function startGame(){
     if (!audioCtx) {
@@ -415,24 +417,6 @@ document.getElementById("btnO").addEventListener("click", () => simMove(3, 0));
 document.getElementById("btnRotLeft").addEventListener("click", () => simRotate(-15));
 document.getElementById("btnRotRight").addEventListener("click", () => simRotate(15));
 
-window.addEventListener("keydown", function(e) {
-    if (gameScreen.style.display === "flex") {
-        const keys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "w", "a", "s", "d"];
-        
-        if (keys.includes(e.key)) {
-            if (document.activeElement.tagName === "INPUT") {
-                document.activeElement.blur();
-            }
-            e.preventDefault();
-
-            if (e.key === "ArrowUp" || e.key === "w") simMove(0, 3);
-            if (e.key === "ArrowDown" || e.key === "s") simMove(0, -3);
-            if (e.key === "ArrowLeft" || e.key === "a") simMove(-3, 0);
-            if (e.key === "ArrowRight" || e.key === "d") simMove(3, 0);
-        }
-    }
-});
-
 function updateGame(){
     if(latitude === null || longitude === null || TARGET_LAT === null || TARGET_LON === null) return;
 
@@ -443,12 +427,14 @@ function updateGame(){
     accuracyOutput.textContent = "GPS-Genauigkeit: ±" + accuracy + " m";
     bearingOutput.textContent = "Zielrichtung: " + Math.round(targetBearing) + "°";
 
+    // Automatische Kameraumschaltung bei <= 20 Metern
     if(distance <= TARGET_RADIUS){
         status.textContent = "🎯 ZIELBEREICH ERREICHT";
-        cameraButton.style.display = "block";
+        if (gameScreen.style.display !== "none") {
+            openCamera();
+        }
     } else {
         status.textContent = "🔎 ZIEL SUCHEN";
-        cameraButton.style.display = "none";
     }
 
     updateRadar();
@@ -509,19 +495,19 @@ function startRadar(){
 cameraButton.addEventListener("click", openCamera);
 
 async function openCamera(){
-    if(!cameraStream){
-        try{
+    try {
+        if (!cameraStream) {
             cameraStream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: { ideal: "environment" } },
                 audio: false
             });
             camera.srcObject = cameraStream;
-        } catch(error){
-            alert("Kamera konnte nicht geöffnet werden.");
         }
+        gameScreen.style.display = "none";
+        cameraScreen.style.display = "flex";
+    } catch(error) {
+        alert("Kamera-Fehler: " + error.message + "\nBitte prüfe die Berechtigungen deines Browsers.");
     }
-    gameScreen.style.display = "none";
-    cameraScreen.style.display = "flex";
 }
 
 foundButton.addEventListener("click", function(){
@@ -541,7 +527,6 @@ function stopCamera(){
 againButton.addEventListener("click", function(){
     success.style.display = "none";
     gameScreen.style.display = "flex";
-    cameraButton.style.display = "none";
 
     startRadar();
     updateGame();
