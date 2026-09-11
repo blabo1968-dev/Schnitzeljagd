@@ -57,7 +57,7 @@
         button { 
             padding: 12px 20px; 
             font-size: clamp(14px, 3.5vw, 16px); 
-            margin: 10px; 
+            margin: 8px; 
             cursor: pointer; 
             background: #00e5ff; 
             border: none; 
@@ -152,7 +152,7 @@
 
     <!-- SPIEL-BILDSCHIRM -->
     <div id="gameScreen" class="screen">
-        <div id="status" style="font-weight: bold; color: #00e5ff; font-size: 16px; margin-bottom: 10px;">SCHEIBE SCANNEN</div>
+        <div id="status" style="font-weight: bold; color: #00e5ff; font-size: 16px; margin-bottom: 10px;">🔎 ZIEL SUCHEN</div>
         
         <div id="radar">
             <div id="sweep"></div>
@@ -164,14 +164,17 @@
         <div class="info-text" id="accuracy">GPS-Genauigkeit: -</div>
         <div class="info-text" id="bearing">Zielrichtung: -</div>
         
-        <button id="cameraButton" style="background: #00ff66; margin-top: 15px;">KAMERA JETZT ÖFFNEN</button>
+        <button id="cameraButton" style="background: #00ff66; margin-top: 15px;">KAMERA ÖFFNEN</button>
     </div>
 
     <!-- KAMERA-BILDSCHIRM -->
     <div id="cameraScreen" class="screen">
-        <h3 style="color: #00ff66; margin-bottom: 10px;">🎯 ZIELBEREICH ERREICHT</h3>
+        <h3 id="cameraHeaderTitle" style="color: #00e5ff; margin-bottom: 10px;">📷 KAMERA-SUCHE</h3>
         <video id="camera" autoplay playsinline muted></video>
-        <button id="foundButton" style="margin-top: 15px; background: #00ff66;">ZIEL GEFUNDEN</button>
+        <div style="margin-top: 10px;">
+            <button id="foundButton" style="background: #00ff66;">ZIEL GEFUNDEN</button>
+            <button id="closeCameraButton" style="background: #ff5252; color: #fff;">KAMERA SCHLIESSEN</button>
+        </div>
     </div>
 
     <!-- ERFOLGS-BILDSCHIRM -->
@@ -186,7 +189,7 @@ let TARGET_LAT = null;
 let TARGET_LON = null;
 let TARGET_NAME = "";
 const SPAWN_DISTANCE_METERS = 25;
-const TARGET_RADIUS = 20;
+const TARGET_RADIUS = 5; 
 const RADAR_RANGE = 100;
 
 let latitude = null; 
@@ -237,6 +240,7 @@ const success = document.getElementById("success");
 
 const startButton = document.getElementById("startButton");
 const cameraButton = document.getElementById("cameraButton");
+const closeCameraButton = document.getElementById("closeCameraButton");
 const foundButton = document.getElementById("foundButton");
 const againButton = document.getElementById("again");
 
@@ -244,6 +248,7 @@ const status = document.getElementById("status");
 const distanceOutput = document.getElementById("distance");
 const accuracyOutput = document.getElementById("accuracy");
 const bearingOutput = document.getElementById("bearing");
+const cameraHeaderTitle = document.getElementById("cameraHeaderTitle");
 
 const target = document.getElementById("target");
 const radar = document.getElementById("radar");
@@ -306,14 +311,25 @@ startButton.addEventListener("click", async () => {
 async function initCameraStream() {
     try {
         if (!cameraStream) {
+            // Rückkamera gezielt anfordern
             cameraStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: { ideal: "environment" } },
+                video: { facingMode: { exact: "environment" } },
                 audio: false
             });
-            camera.srcObject = cameraStream;
         }
     } catch (err) {
-        console.log("Kamera Vorab-Aktivierung:", err.message);
+        try {
+            // Fallback auf allgemeine Umgebungskamera
+            cameraStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: "environment" },
+                audio: false
+            });
+        } catch (e) {
+            console.log("Kamera Vorab-Aktivierung Fehlgeschlagen:", e.message);
+        }
+    }
+    if (cameraStream) {
+        camera.srcObject = cameraStream;
     }
 }
 
@@ -364,18 +380,28 @@ function updateGame(){
     const distance = calculateDistance(latitude, longitude, TARGET_LAT, TARGET_LON);
     targetBearing = calculateBearing(latitude, longitude, TARGET_LAT, TARGET_LON);
 
-    distanceOutput.textContent = Math.round(distance);
+    const distRounded = Math.round(distance);
+    distanceOutput.textContent = distRounded;
     accuracyOutput.textContent = "GPS-Genauigkeit: ±" + accuracy + " m";
     bearingOutput.textContent = "Zielrichtung: " + Math.round(targetBearing) + "°";
 
-    // Automatische Umschaltung zur Kamera bei <= 20 Metern
+    // Prüfe streng auf <= 5 Meter
     if(distance <= TARGET_RADIUS){
         status.textContent = "🎯 ZIELBEREICH ERREICHT";
+        status.style.color = "#00ff66";
+        
+        cameraHeaderTitle.textContent = "🎯 ZIELBEREICH ERREICHT (" + distRounded + " m)";
+        cameraHeaderTitle.style.color = "#00ff66";
+
         if (gameScreen.style.display !== "none") {
             openCamera();
         }
     } else {
         status.textContent = "🔎 ZIEL SUCHEN";
+        status.style.color = "#00e5ff";
+
+        cameraHeaderTitle.textContent = "📷 KAMERA-SUCHE (" + distRounded + " m)";
+        cameraHeaderTitle.style.color = "#00e5ff";
     }
 
     updateRadar();
@@ -434,21 +460,23 @@ function startRadar(){
 }
 
 cameraButton.addEventListener("click", openCamera);
+closeCameraButton.addEventListener("click", closeCamera);
 
 async function openCamera(){
     try {
         if (!cameraStream) {
-            cameraStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: { ideal: "environment" } },
-                audio: false
-            });
-            camera.srcObject = cameraStream;
+            await initCameraStream();
         }
         gameScreen.style.display = "none";
         cameraScreen.style.display = "flex";
     } catch(error) {
         alert("Kamera-Fehler: " + error.message + "\nBitte prüfe die Berechtigungen deines Browsers.");
     }
+}
+
+function closeCamera(){
+    cameraScreen.style.display = "none";
+    gameScreen.style.display = "flex";
 }
 
 foundButton.addEventListener("click", function(){
