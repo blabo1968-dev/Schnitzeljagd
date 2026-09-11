@@ -67,6 +67,14 @@
             touch-action: manipulation;
         }
 
+        /* Inaktiver / Gesperrter Button */
+        button:disabled {
+            background: #444 !important;
+            color: #888 !important;
+            cursor: not-allowed;
+            border: 1px solid #555;
+        }
+
         .station-badge {
             background: rgba(255, 102, 0, 0.15);
             border: 1px solid #ff6600;
@@ -142,7 +150,6 @@
             z-index: 10;
         }
 
-        /* Virtuelles Halloween Objekt (Geist/Kürbis) im Kamerabild */
         #arObject {
             position: absolute;
             top: 50%;
@@ -161,7 +168,6 @@
             100% { transform: translate(-50%, -45%) scale(1.08); }
         }
 
-        /* Saugeffekt-Animation (Version 3) */
         .sucking {
             animation: suckAnim 1.2s forwards !important;
         }
@@ -215,7 +221,7 @@
         <div class="control-panel" style="max-width: 340px;">
             <strong style="color: #ff6600; font-size: 15px;">🚩 SCHNELLER TEST-MODUS</strong><br><br>
             <span style="color: #ccc; font-size: 12px; line-height: 1.4;">
-                Spüre <strong>5 Geister & Kürbisse</strong> auf und sauge sie mit dem Geister-Staubsauger ein!
+                Spüre <strong>5 Geister & Kürbisse</strong> auf! Du musst bis auf <strong>unter 5 Meter</strong> herangehen, um sie einzusaugen.
             </span>
         </div>
 
@@ -253,13 +259,12 @@
                 <span id="cameraDistText">-- m</span>
             </div>
 
-            <!-- VIRTUELLES HALLOWEEN-OBJEKT -->
             <div id="arObject">👻</div>
         </div>
 
         <div style="margin-top: 5px;">
             <button id="cameraOffButton" style="background: #ff5252; color: #fff;">📷 ZURÜCK ZUM RADAR</button>
-            <button id="foundButton" style="background: #00ff66; color: #000;">🎯 GEIST EINSAUGEN</button>
+            <button id="foundButton" disabled style="background: #00ff66; color: #000;">🎯 GEIST EINSAUGEN</button>
         </div>
     </div>
 
@@ -277,7 +282,7 @@
 let waypoints = [];
 let currentIndex = 0;
 const TOTAL_STATIONS = 5;
-const TARGET_RADIUS = 5; 
+const TARGET_RADIUS = 5; // Maximal 5 Meter Entfernung zum Einsaugen
 const RADAR_RANGE = 100;
 
 const HALLOWEEN_ICONS = ["👻", "🎃", "👻", "🎃", "👻"];
@@ -326,7 +331,6 @@ function playSonarPing() {
     }
 }
 
-// Staubsauger-Soundeffekt
 function playVacuumSound() {
     try {
         if (!audioCtx) {
@@ -515,21 +519,31 @@ function updateCameraOverlay() {
 
     arObject.textContent = currentTarget.icon;
 
+    // PRÜFUNG: Nur freischalten, wenn Entfernung <= 5 Meter ist!
     if (distance <= TARGET_RADIUS) {
-        cameraHeaderTitle.textContent = "🎯 GEIST BEREIT ZUM SAUGEN!";
+        cameraHeaderTitle.textContent = "🎯 JETZT EINSAUGEN!";
         cameraHeaderTitle.style.color = "#00ff66";
         arObject.style.opacity = "1";
         arObject.style.fontSize = "90px";
-    } else if (distance <= 15) {
-        cameraHeaderTitle.textContent = "📷 KAMERA-SUCHE";
-        cameraHeaderTitle.style.color = "#ff6600";
-        arObject.style.opacity = "0.7";
-        arObject.style.fontSize = "65px";
+        
+        // Button freischalten
+        foundButton.disabled = false;
+        foundButton.style.background = "#00ff66";
     } else {
-        cameraHeaderTitle.textContent = "📷 KAMERA-SUCHE";
-        cameraHeaderTitle.style.color = "#ff6600";
-        arObject.style.opacity = "0.35";
-        arObject.style.fontSize = "45px";
+        // Zu weit weg: Button sperren!
+        foundButton.disabled = true;
+        
+        if (distance <= 15) {
+            cameraHeaderTitle.textContent = "📷 NÄHER HERANGEHEN!";
+            cameraHeaderTitle.style.color = "#ff6600";
+            arObject.style.opacity = "0.7";
+            arObject.style.fontSize = "65px";
+        } else {
+            cameraHeaderTitle.textContent = "📷 ZU WEIT ENTFERNT";
+            cameraHeaderTitle.style.color = "#ff6600";
+            arObject.style.opacity = "0.35";
+            arObject.style.fontSize = "45px";
+        }
     }
 }
 
@@ -603,9 +617,8 @@ async function toggleCamera(){
     }
 }
 
-// Staubsauger-Mechanik (Version 3)
 foundButton.addEventListener("click", function(){
-    if (isSucking) return;
+    if (isSucking || foundButton.disabled) return;
     
     isSucking = true;
     foundButton.disabled = true;
@@ -616,7 +629,6 @@ foundButton.addEventListener("click", function(){
     setTimeout(() => {
         arObject.classList.remove("sucking");
         isSucking = false;
-        foundButton.disabled = false;
         advanceToNextStation();
     }, 1200);
 });
