@@ -108,7 +108,44 @@
             transition: opacity 0.8s ease-out; 
         }
         
-        video { width: 100%; max-width: 350px; height: 280px; border-radius: 8px; background: #222; object-fit: cover; }
+        .camera-container {
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+            height: 280px;
+            margin: 10px auto;
+        }
+
+        video { 
+            width: 100%; 
+            height: 100%; 
+            border-radius: 8px; 
+            background: #222; 
+            object-fit: cover; 
+        }
+
+        .camera-overlay {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00e5ff;
+            border-radius: 8px;
+            padding: 6px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            font-size: 14px;
+            color: #00e5ff;
+        }
+
+        #cameraArrow {
+            font-size: 20px;
+            display: inline-block;
+            transition: transform 0.2s ease-out;
+        }
         
         .control-panel { 
             background: #222; 
@@ -147,7 +184,7 @@
             <div id="searchStatus"></div>
         </div>
 
-        <button id="startButton">SPIEL & KAMERA STARTEN</button>
+        <button id="startButton">SPIEL STARTEN</button>
     </div>
 
     <!-- SPIEL-BILDSCHIRM -->
@@ -164,16 +201,24 @@
         <div class="info-text" id="accuracy">GPS-Genauigkeit: -</div>
         <div class="info-text" id="bearing">Zielrichtung: -</div>
         
-        <button id="cameraButton" style="background: #00ff66; margin-top: 15px;">KAMERA ÖFFNEN</button>
+        <button id="cameraToggleButton" style="background: #00e5ff; margin-top: 15px;">📷 KAMERA ANSCHALTEN</button>
     </div>
 
     <!-- KAMERA-BILDSCHIRM -->
     <div id="cameraScreen" class="screen">
-        <h3 id="cameraHeaderTitle" style="color: #00e5ff; margin-bottom: 10px;">📷 KAMERA-SUCHE</h3>
-        <video id="camera" autoplay playsinline muted></video>
-        <div style="margin-top: 10px;">
-            <button id="foundButton" style="background: #00ff66;">ZIEL GEFUNDEN</button>
-            <button id="closeCameraButton" style="background: #ff5252; color: #fff;">KAMERA SCHLIESSEN</button>
+        <h3 id="cameraHeaderTitle" style="color: #00e5ff; margin-bottom: 5px;">📷 KAMERA-SUCHE</h3>
+        
+        <div class="camera-container">
+            <video id="camera" autoplay playsinline muted></video>
+            <div class="camera-overlay">
+                <span id="cameraArrow">⬆️</span>
+                <span id="cameraDistText">-- m</span>
+            </div>
+        </div>
+
+        <div style="margin-top: 5px;">
+            <button id="cameraOffButton" style="background: #ff5252; color: #fff;">📷 KAMERA AUSSCHALTEN</button>
+            <button id="foundButton" style="background: #00ff66;">🎯 ZIEL GEFUNDEN</button>
         </div>
     </div>
 
@@ -198,6 +243,8 @@ let accuracy = 0;
 let targetBearing = 0;
 let heading = 0;
 let cameraStream = null;
+let isCameraActive = false;
+
 let sweepAngle = 0;
 let radarAnimation = null;
 let targetAngleRelative = 0;
@@ -239,8 +286,8 @@ const cameraScreen = document.getElementById("cameraScreen");
 const success = document.getElementById("success");
 
 const startButton = document.getElementById("startButton");
-const cameraButton = document.getElementById("cameraButton");
-const closeCameraButton = document.getElementById("closeCameraButton");
+const cameraToggleButton = document.getElementById("cameraToggleButton");
+const cameraOffButton = document.getElementById("cameraOffButton");
 const foundButton = document.getElementById("foundButton");
 const againButton = document.getElementById("again");
 
@@ -248,7 +295,10 @@ const status = document.getElementById("status");
 const distanceOutput = document.getElementById("distance");
 const accuracyOutput = document.getElementById("accuracy");
 const bearingOutput = document.getElementById("bearing");
+
 const cameraHeaderTitle = document.getElementById("cameraHeaderTitle");
+const cameraArrow = document.getElementById("cameraArrow");
+const cameraDistText = document.getElementById("cameraDistText");
 
 const target = document.getElementById("target");
 const radar = document.getElementById("radar");
@@ -303,35 +353,9 @@ function setDynamicTarget(userLat, userLon) {
     TARGET_NAME = "Automatisches Testziel (25m)";
 }
 
-startButton.addEventListener("click", async () => {
-    await initCameraStream();
+startButton.addEventListener("click", () => {
     startGame();
 });
-
-async function initCameraStream() {
-    try {
-        if (!cameraStream) {
-            // Rückkamera gezielt anfordern
-            cameraStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: { exact: "environment" } },
-                audio: false
-            });
-        }
-    } catch (err) {
-        try {
-            // Fallback auf allgemeine Umgebungskamera
-            cameraStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: "environment" },
-                audio: false
-            });
-        } catch (e) {
-            console.log("Kamera Vorab-Aktivierung Fehlgeschlagen:", e.message);
-        }
-    }
-    if (cameraStream) {
-        camera.srcObject = cameraStream;
-    }
-}
 
 function startGame(){
     if (!audioCtx) {
@@ -368,6 +392,7 @@ function startGame(){
                 heading = 360 - e.alpha;
             }
             updateRadar();
+            updateCameraOverlay();
         }, true);
     }
 
@@ -385,26 +410,16 @@ function updateGame(){
     accuracyOutput.textContent = "GPS-Genauigkeit: ±" + accuracy + " m";
     bearingOutput.textContent = "Zielrichtung: " + Math.round(targetBearing) + "°";
 
-    // Prüfe streng auf <= 5 Meter
     if(distance <= TARGET_RADIUS){
         status.textContent = "🎯 ZIELBEREICH ERREICHT";
         status.style.color = "#00ff66";
-        
-        cameraHeaderTitle.textContent = "🎯 ZIELBEREICH ERREICHT (" + distRounded + " m)";
-        cameraHeaderTitle.style.color = "#00ff66";
-
-        if (gameScreen.style.display !== "none") {
-            openCamera();
-        }
     } else {
         status.textContent = "🔎 ZIEL SUCHEN";
         status.style.color = "#00e5ff";
-
-        cameraHeaderTitle.textContent = "📷 KAMERA-SUCHE (" + distRounded + " m)";
-        cameraHeaderTitle.style.color = "#00e5ff";
     }
 
     updateRadar();
+    updateCameraOverlay();
 }
 
 function updateRadar(){
@@ -422,6 +437,25 @@ function updateRadar(){
 
     target.style.left = (center + Math.sin(radians) * radius) + "px";
     target.style.top = (center - Math.cos(radians) * radius) + "px";
+}
+
+function updateCameraOverlay() {
+    if (!isCameraActive || latitude === null || longitude === null) return;
+
+    const distance = calculateDistance(latitude, longitude, TARGET_LAT, TARGET_LON);
+    const distRounded = Math.round(distance);
+
+    targetAngleRelative = normalize(targetBearing - heading);
+    cameraArrow.style.transform = `rotate(${targetAngleRelative}deg)`;
+    cameraDistText.textContent = distRounded + " m";
+
+    if (distance <= TARGET_RADIUS) {
+        cameraHeaderTitle.textContent = "🎯 ZIELBEREICH ERREICHT";
+        cameraHeaderTitle.style.color = "#00ff66";
+    } else {
+        cameraHeaderTitle.textContent = "📷 KAMERA-SUCHE";
+        cameraHeaderTitle.style.color = "#00e5ff";
+    }
 }
 
 function startRadar(){
@@ -459,28 +493,44 @@ function startRadar(){
     animate();
 }
 
-cameraButton.addEventListener("click", openCamera);
-closeCameraButton.addEventListener("click", closeCamera);
+cameraToggleButton.addEventListener("click", toggleCamera);
+cameraOffButton.addEventListener("click", toggleCamera);
 
-async function openCamera(){
-    try {
-        if (!cameraStream) {
-            await initCameraStream();
+async function toggleCamera(){
+    if (!isCameraActive) {
+        try {
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { exact: "environment" } },
+                    audio: false
+                });
+            } catch (err) {
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "environment" },
+                    audio: false
+                });
+            }
+            
+            camera.srcObject = cameraStream;
+            isCameraActive = true;
+            
+            gameScreen.style.display = "none";
+            cameraScreen.style.display = "flex";
+            updateCameraOverlay();
+        } catch(error) {
+            alert("Kamera-Fehler: " + error.message + "\nBitte Kamera-Berechtigung erteilen.");
         }
-        gameScreen.style.display = "none";
-        cameraScreen.style.display = "flex";
-    } catch(error) {
-        alert("Kamera-Fehler: " + error.message + "\nBitte prüfe die Berechtigungen deines Browsers.");
+    } else {
+        stopCamera();
+        isCameraActive = false;
+        cameraScreen.style.display = "none";
+        gameScreen.style.display = "flex";
     }
-}
-
-function closeCamera(){
-    cameraScreen.style.display = "none";
-    gameScreen.style.display = "flex";
 }
 
 foundButton.addEventListener("click", function(){
     stopCamera();
+    isCameraActive = false;
     cameraScreen.style.display = "none";
     success.style.display = "flex";
 });
