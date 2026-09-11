@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GPS Radar - Blankenhagen Spieleentwicklung</title>
+    <title>GPS Schnitzeljagd - Blankenhagen Spieleentwicklung</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
@@ -67,17 +67,15 @@
             touch-action: manipulation;
         }
 
-        input[type="text"] {
-            padding: 10px;
-            font-size: 14px;
+        .station-badge {
+            background: rgba(0, 229, 255, 0.15);
             border: 1px solid #00e5ff;
-            background: #111;
-            color: #fff;
-            border-radius: 4px;
-            width: 90%;
-            max-width: 280px;
-            text-align: center;
-            margin: 6px 0;
+            color: #00e5ff;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 8px;
         }
 
         #radar { 
@@ -86,7 +84,7 @@
             border-radius: 50%; 
             border: 2px solid #00e5ff; 
             position: relative; 
-            margin: 15px auto; 
+            margin: 10px auto; 
             overflow: hidden; 
             background: rgba(0,229,255,0.05); 
             flex-shrink: 0;
@@ -150,46 +148,41 @@
         .control-panel { 
             background: #222; 
             border: 1px solid #444; 
-            padding: 12px; 
+            padding: 15px; 
             border-radius: 8px; 
-            margin-bottom: 10px; 
+            margin-bottom: 15px; 
             width: 100%; 
             font-size: 13px;
         }
         
-        .info-text { font-size: clamp(13px, 3vw, 15px); margin: 4px 0; }
-        #searchStatus { font-size: 11px; color: #00e5ff; margin-top: 4px; min-height: 16px; }
+        .info-text { font-size: clamp(13px, 3vw, 15px); margin: 3px 0; }
     </style>
 </head>
 <body>
 
     <header>
         <h2>Blankenhagen Spieleentwicklung</h2>
-        <p>Prototyp Test – GPS Radar</p>
+        <p>Prototyp Test – Schnitzeljagd Radar</p>
     </header>
 
     <!-- START-BILDSCHIRM -->
     <div id="startScreen" class="screen">
-        <h1 style="font-size: clamp(18px, 4vw, 24px); margin-bottom: 15px;">GPS RADAR PROTOTYP</h1>
+        <h1 style="font-size: clamp(18px, 4vw, 24px); margin-bottom: 15px;">SCHNITZELJAGD TESTSPIEL</h1>
         
         <div class="control-panel" style="max-width: 340px;">
-            <strong style="color: #00e5ff; font-size: 14px;">🏠 ZIELADRESSE EINGEBEN</strong><br>
-            <span style="color: #ccc; font-size: 11px;">(Optionale Zieladresse):</span>
-            
-            <div style="margin: 8px 0;">
-                <input type="text" id="addressInput" placeholder="z. B. Marktplatz 1, Plochingen"><br>
-                <button type="button" id="btnSearchAddress" style="padding: 6px 12px; font-size: 12px; margin-top: 4px;">ADRESSE SUCHEN</button>
-            </div>
-            
-            <div id="searchStatus"></div>
+            <strong style="color: #00e5ff; font-size: 15px;">🚩 SCHNELLER TEST-MODUS</strong><br><br>
+            <span style="color: #ccc; font-size: 12px; line-height: 1.4;">
+                Es werden automatisch <strong>5 Test-Stationen</strong> in deiner unmittelbaren Umgebung generiert.
+            </span>
         </div>
 
-        <button id="startButton">SPIEL STARTEN</button>
+        <button id="startButton">TESTSPIEL STARTEN</button>
     </div>
 
     <!-- SPIEL-BILDSCHIRM -->
     <div id="gameScreen" class="screen">
-        <div id="status" style="font-weight: bold; color: #00e5ff; font-size: 16px; margin-bottom: 10px;">🔎 ZIEL SUCHEN</div>
+        <div id="stationBadge" class="station-badge">STATION 1 VON 5</div>
+        <div id="status" style="font-weight: bold; color: #00e5ff; font-size: 16px; margin-bottom: 5px;">🔎 ZIEL SUCHEN</div>
         
         <div id="radar">
             <div id="sweep"></div>
@@ -201,11 +194,12 @@
         <div class="info-text" id="accuracy">GPS-Genauigkeit: -</div>
         <div class="info-text" id="bearing">Zielrichtung: -</div>
         
-        <button id="cameraToggleButton" style="background: #00e5ff; margin-top: 15px;">📷 KAMERA ANSCHALTEN</button>
+        <button id="cameraToggleButton" style="background: #00e5ff; margin-top: 10px;">📷 KAMERA ANSCHALTEN</button>
     </div>
 
     <!-- KAMERA-BILDSCHIRM -->
     <div id="cameraScreen" class="screen">
+        <div id="cameraStationBadge" class="station-badge">STATION 1 VON 5</div>
         <h3 id="cameraHeaderTitle" style="color: #00e5ff; margin-bottom: 5px;">📷 KAMERA-SUCHE</h3>
         
         <div class="camera-container">
@@ -224,16 +218,15 @@
 
     <!-- ERFOLGS-BILDSCHIRM -->
     <div id="success" class="screen">
-        <h1 style="color: #00ff66; font-size: clamp(20px, 5vw, 28px); margin-bottom: 10px;">HERZLICHEN GLÜCKWUNSCH!</h1>
-        <p style="margin-bottom: 15px; font-size: 14px;">Du hast das Ziel erfolgreich erreicht.</p>
-        <button id="again">NOCH EINMAL</button>
+        <h1 style="color: #00ff66; font-size: clamp(20px, 5vw, 28px); margin-bottom: 10px;">SCHNITZELJAGD BEENDET!</h1>
+        <p style="margin-bottom: 15px; font-size: 14px;">Du hast alle 5 Test-Stationen erfolgreich gefunden.</p>
+        <button id="again">NEUES TESTSPIEL</button>
     </div>
 
 <script>
-let TARGET_LAT = null;
-let TARGET_LON = null;
-let TARGET_NAME = "";
-const SPAWN_DISTANCE_METERS = 25;
+let waypoints = [];
+let currentIndex = 0;
+const TOTAL_STATIONS = 5;
 const TARGET_RADIUS = 5; 
 const RADAR_RANGE = 100;
 
@@ -295,6 +288,8 @@ const status = document.getElementById("status");
 const distanceOutput = document.getElementById("distance");
 const accuracyOutput = document.getElementById("accuracy");
 const bearingOutput = document.getElementById("bearing");
+const stationBadge = document.getElementById("stationBadge");
+const cameraStationBadge = document.getElementById("cameraStationBadge");
 
 const cameraHeaderTitle = document.getElementById("cameraHeaderTitle");
 const cameraArrow = document.getElementById("cameraArrow");
@@ -306,51 +301,30 @@ const sweep = document.getElementById("sweep");
 const sweepGlow = document.getElementById("sweepGlow");
 const camera = document.getElementById("camera");
 
-document.getElementById("btnSearchAddress").addEventListener("click", searchAddress);
-
-async function searchAddress() {
-    const address = document.getElementById("addressInput").value.trim();
-    const searchStatus = document.getElementById("searchStatus");
-
-    if (!address) {
-        searchStatus.style.color = "#ff5252";
-        searchStatus.textContent = "Bitte eine Adresse eingeben.";
-        return;
-    }
-
-    searchStatus.style.color = "#00e5ff";
-    searchStatus.textContent = "Adresse wird gesucht...";
-
-    try {
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (data && data.length > 0) {
-            TARGET_LAT = parseFloat(data[0].lat);
-            TARGET_LON = parseFloat(data[0].lon);
-            TARGET_NAME = data[0].display_name.split(',')[0] + ", " + (data[0].display_name.split(',')[1] || "");
-
-            searchStatus.style.color = "#00ff66";
-            searchStatus.textContent = "✓ Gefunden: " + TARGET_NAME;
-        } else {
-            searchStatus.style.color = "#ff5252";
-            searchStatus.textContent = "Adresse nicht gefunden. Bitte genauer eingeben.";
-        }
-    } catch (err) {
-        searchStatus.style.color = "#ff5252";
-        searchStatus.textContent = "Fehler bei der Adressabfrage.";
-    }
-}
-
-function setDynamicTarget(userLat, userLon) {
+function generateTestWaypoints(userLat, userLon) {
+    waypoints = [];
     const metersPerDegree = 111000;
-    const latOffset = SPAWN_DISTANCE_METERS / metersPerDegree;
-    const lonOffset = SPAWN_DISTANCE_METERS / (metersPerDegree * Math.cos(userLat * Math.PI / 180));
+    
+    // Generiert 5 leicht versetzte Punkte im Bereich von 20m bis 60m
+    const offsets = [
+        { dn: 25, de: 15 },
+        { dn: -20, de: 30 },
+        { dn: 35, de: -25 },
+        { dn: -30, de: -20 },
+        { dn: 40, de: 35 }
+    ];
 
-    TARGET_LAT = userLat + (latOffset * 0.7);
-    TARGET_LON = userLon + (lonOffset * 0.7);
-    TARGET_NAME = "Automatisches Testziel (25m)";
+    for (let i = 0; i < TOTAL_STATIONS; i++) {
+        const latOffset = offsets[i].dn / metersPerDegree;
+        const lonOffset = offsets[i].de / (metersPerDegree * Math.cos(userLat * Math.PI / 180));
+        
+        waypoints.push({
+            id: i + 1,
+            lat: userLat + latOffset,
+            lon: userLon + lonOffset
+        });
+    }
+    currentIndex = 0;
 }
 
 startButton.addEventListener("click", () => {
@@ -362,9 +336,6 @@ function startGame(){
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
 
-    startScreen.style.display = "none";
-    gameScreen.style.display = "flex";
-
     if ("geolocation" in navigator) {
         navigator.geolocation.watchPosition(
             (pos) => {
@@ -372,8 +343,11 @@ function startGame(){
                 longitude = pos.coords.longitude;
                 accuracy = Math.round(pos.coords.accuracy);
                 
-                if (TARGET_LAT === null) {
-                    setDynamicTarget(latitude, longitude);
+                if (waypoints.length === 0) {
+                    generateTestWaypoints(latitude, longitude);
+                    startScreen.style.display = "none";
+                    gameScreen.style.display = "flex";
+                    startRadar();
                 }
                 updateGame();
             },
@@ -395,20 +369,23 @@ function startGame(){
             updateCameraOverlay();
         }, true);
     }
-
-    startRadar();
 }
 
 function updateGame(){
-    if(latitude === null || longitude === null || TARGET_LAT === null || TARGET_LON === null) return;
+    if(latitude === null || longitude === null || waypoints.length === 0) return;
 
-    const distance = calculateDistance(latitude, longitude, TARGET_LAT, TARGET_LON);
-    targetBearing = calculateBearing(latitude, longitude, TARGET_LAT, TARGET_LON);
+    const currentTarget = waypoints[currentIndex];
+    const distance = calculateDistance(latitude, longitude, currentTarget.lat, currentTarget.lon);
+    targetBearing = calculateBearing(latitude, longitude, currentTarget.lat, currentTarget.lon);
 
     const distRounded = Math.round(distance);
     distanceOutput.textContent = distRounded;
     accuracyOutput.textContent = "GPS-Genauigkeit: ±" + accuracy + " m";
     bearingOutput.textContent = "Zielrichtung: " + Math.round(targetBearing) + "°";
+    
+    const badgeText = `STATION ${currentIndex + 1} VON ${TOTAL_STATIONS}`;
+    stationBadge.textContent = badgeText;
+    cameraStationBadge.textContent = badgeText;
 
     if(distance <= TARGET_RADIUS){
         status.textContent = "🎯 ZIELBEREICH ERREICHT";
@@ -423,9 +400,10 @@ function updateGame(){
 }
 
 function updateRadar(){
-    if(latitude === null || longitude === null || TARGET_LAT === null || TARGET_LON === null) return;
+    if(latitude === null || longitude === null || waypoints.length === 0) return;
 
-    const distance = calculateDistance(latitude, longitude, TARGET_LAT, TARGET_LON);
+    const currentTarget = waypoints[currentIndex];
+    const distance = calculateDistance(latitude, longitude, currentTarget.lat, currentTarget.lon);
     const size = radar.clientWidth;
     const center = size / 2;
 
@@ -440,9 +418,10 @@ function updateRadar(){
 }
 
 function updateCameraOverlay() {
-    if (!isCameraActive || latitude === null || longitude === null) return;
+    if (!isCameraActive || latitude === null || longitude === null || waypoints.length === 0) return;
 
-    const distance = calculateDistance(latitude, longitude, TARGET_LAT, TARGET_LON);
+    const currentTarget = waypoints[currentIndex];
+    const distance = calculateDistance(latitude, longitude, currentTarget.lat, currentTarget.lon);
     const distRounded = Math.round(distance);
 
     targetAngleRelative = normalize(targetBearing - heading);
@@ -529,11 +508,28 @@ async function toggleCamera(){
 }
 
 foundButton.addEventListener("click", function(){
-    stopCamera();
-    isCameraActive = false;
-    cameraScreen.style.display = "none";
-    success.style.display = "flex";
+    advanceToNextStation();
 });
+
+function advanceToNextStation() {
+    currentIndex++;
+    
+    if (currentIndex >= TOTAL_STATIONS) {
+        stopCamera();
+        isCameraActive = false;
+        cameraScreen.style.display = "none";
+        gameScreen.style.display = "none";
+        success.style.display = "flex";
+    } else {
+        if (isCameraActive) {
+            stopCamera();
+            isCameraActive = false;
+            cameraScreen.style.display = "none";
+            gameScreen.style.display = "flex";
+        }
+        updateGame();
+    }
+}
 
 function stopCamera(){
     if(cameraStream){
@@ -545,8 +541,11 @@ function stopCamera(){
 
 againButton.addEventListener("click", function(){
     success.style.display = "none";
+    waypoints = [];
+    if (latitude !== null && longitude !== null) {
+        generateTestWaypoints(latitude, longitude);
+    }
     gameScreen.style.display = "flex";
-
     startRadar();
     updateGame();
 });
