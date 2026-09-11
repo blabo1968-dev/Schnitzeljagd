@@ -55,9 +55,9 @@
         #gameScreen, #cameraScreen, #success { display: none; }
 
         button { 
-            padding: 10px 16px; 
-            font-size: clamp(13px, 3vw, 15px); 
-            margin: 4px; 
+            padding: 12px 20px; 
+            font-size: clamp(14px, 3.5vw, 16px); 
+            margin: 10px; 
             cursor: pointer; 
             background: #00e5ff; 
             border: none; 
@@ -68,8 +68,8 @@
         }
 
         input[type="text"] {
-            padding: 8px;
-            font-size: 13px;
+            padding: 10px;
+            font-size: 14px;
             border: 1px solid #00e5ff;
             background: #111;
             color: #fff;
@@ -77,16 +77,16 @@
             width: 90%;
             max-width: 280px;
             text-align: center;
-            margin: 4px 0;
+            margin: 6px 0;
         }
 
         #radar { 
-            width: min(55vw, 40vh, 220px); 
-            height: min(55vw, 40vh, 220px); 
+            width: min(65vw, 45vh, 260px); 
+            height: min(65vw, 45vh, 260px); 
             border-radius: 50%; 
             border: 2px solid #00e5ff; 
             position: relative; 
-            margin: 10px auto; 
+            margin: 15px auto; 
             overflow: hidden; 
             background: rgba(0,229,255,0.05); 
             flex-shrink: 0;
@@ -95,8 +95,8 @@
         #sweep { background: conic-gradient(from 0deg, rgba(0,229,255,0.4), transparent 60deg); }
         
         #target { 
-            width: 14px; 
-            height: 14px; 
+            width: 16px; 
+            height: 16px; 
             background: #ffff00; 
             border-radius: 50%; 
             position: absolute; 
@@ -108,21 +108,19 @@
             transition: opacity 0.8s ease-out; 
         }
         
-        video { width: 100%; max-width: 350px; height: 260px; border-radius: 8px; background: #222; object-fit: cover; }
+        video { width: 100%; max-width: 350px; height: 280px; border-radius: 8px; background: #222; object-fit: cover; }
         
         .control-panel { 
             background: #222; 
             border: 1px solid #444; 
-            padding: 10px; 
+            padding: 12px; 
             border-radius: 8px; 
             margin-bottom: 10px; 
             width: 100%; 
-            font-size: 12px;
+            font-size: 13px;
         }
-        .sim-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; max-width: 180px; margin: 5px auto; }
-        .sim-grid button { padding: 8px 4px; font-size: 12px; margin: 0; }
         
-        .info-text { font-size: clamp(12px, 2.5vw, 14px); margin: 2px 0; }
+        .info-text { font-size: clamp(13px, 3vw, 15px); margin: 4px 0; }
         #searchStatus { font-size: 11px; color: #00e5ff; margin-top: 4px; min-height: 16px; }
     </style>
 </head>
@@ -139,7 +137,7 @@
         
         <div class="control-panel" style="max-width: 340px;">
             <strong style="color: #00e5ff; font-size: 14px;">🏠 ZIELADRESSE EINGEBEN</strong><br>
-            <span style="color: #ccc; font-size: 11px;">(Straße, Hausnummer, Ort):</span>
+            <span style="color: #ccc; font-size: 11px;">(Optionale Zieladresse):</span>
             
             <div style="margin: 8px 0;">
                 <input type="text" id="addressInput" placeholder="z. B. Marktplatz 1, Plochingen"><br>
@@ -154,33 +152,19 @@
 
     <!-- SPIEL-BILDSCHIRM -->
     <div id="gameScreen" class="screen">
-        <div class="control-panel">
-            <strong style="color: #00e5ff;">🎯 AKTUELLES ZIEL</strong><br>
-            <div id="activeAddressText" style="color: #fff; font-weight: bold; margin: 4px 0; font-size: 11px;">Keine Adresse gewählt (Automatisches Testziel)</div>
-
-            <hr style="border: 0; border-top: 1px solid #444; margin: 6px 0;">
-
-            <span style="color: #ccc; font-size: 11px;">Eigene Bewegung (Pfeiltasten / Klick):</span>
-            <div class="sim-grid">
-                <div></div><button type="button" id="btnN">▲ N</button><div></div>
-                <button type="button" id="btnW">◄ W</button>
-                <button type="button" id="btnS">▼ S</button>
-                <button type="button" id="btnO">► O</button>
-            </div>
-            <button type="button" id="btnRotLeft">↺ -15°</button>
-            <button type="button" id="btnRotRight">↻ +15°</button>
-        </div>
-
-        <div id="status" style="font-weight: bold; color: #00e5ff; font-size: 13px;">SCHEIBE SCANNEN</div>
+        <div id="status" style="font-weight: bold; color: #00e5ff; font-size: 16px; margin-bottom: 10px;">SCHEIBE SCANNEN</div>
+        
         <div id="radar">
             <div id="sweep"></div>
             <div id="sweepGlow"></div>
             <div id="target"></div>
         </div>
-        <div class="info-text">Entfernung: <span id="distance" style="font-weight: bold;">-</span> m</div>
+
+        <div class="info-text">Entfernung: <span id="distance" style="font-weight: bold; color: #00e5ff;">-</span> m</div>
         <div class="info-text" id="accuracy">GPS-Genauigkeit: -</div>
         <div class="info-text" id="bearing">Zielrichtung: -</div>
-        <button id="cameraButton" style="background: #00ff66; margin-top: 10px;">KAMERA JETZT ÖFFNEN</button>
+        
+        <button id="cameraButton" style="background: #00ff66; margin-top: 15px;">KAMERA JETZT ÖFFNEN</button>
     </div>
 
     <!-- KAMERA-BILDSCHIRM -->
@@ -205,9 +189,9 @@ const SPAWN_DISTANCE_METERS = 25;
 const TARGET_RADIUS = 20;
 const RADAR_RANGE = 100;
 
-let latitude = 48.715; 
-let longitude = 9.420;
-let accuracy = 5;      
+let latitude = null; 
+let longitude = null;
+let accuracy = 0;      
 let targetBearing = 0;
 let heading = 0;
 let cameraStream = null;
@@ -315,7 +299,6 @@ function setDynamicTarget(userLat, userLon) {
 }
 
 startButton.addEventListener("click", async () => {
-    // Kamera vorab initialisieren
     await initCameraStream();
     startGame();
 });
@@ -352,20 +335,13 @@ function startGame(){
                 if (TARGET_LAT === null) {
                     setDynamicTarget(latitude, longitude);
                 }
-                updateTargetText();
                 updateGame();
             },
             (err) => {
-                if (TARGET_LAT === null) setDynamicTarget(latitude, longitude);
-                updateTargetText();
-                updateGame();
+                alert("GPS konnte nicht abgerufen werden. Bitte Standort freigeben.");
             },
             { enableHighAccuracy: true, maximumAge: 1000, timeout: 5000 }
         );
-    } else {
-        if (TARGET_LAT === null) setDynamicTarget(latitude, longitude);
-        updateTargetText();
-        updateGame();
     }
 
     if (window.DeviceOrientationEvent) {
@@ -382,41 +358,6 @@ function startGame(){
     startRadar();
 }
 
-function updateTargetText() {
-    const activeAddressText = document.getElementById("activeAddressText");
-    if (TARGET_NAME) {
-        activeAddressText.textContent = "Ziel: " + TARGET_NAME;
-    } else if (TARGET_LAT !== null) {
-        activeAddressText.textContent = "Ziel: " + TARGET_LAT.toFixed(5) + ", " + TARGET_LON.toFixed(5);
-    }
-}
-
-function simMove(eastMeters, northMeters) {
-    if (document.activeElement) {
-        document.activeElement.blur();
-    }
-
-    const metersPerDegree = 111000;
-    latitude += northMeters / metersPerDegree;
-    longitude += eastMeters / (metersPerDegree * Math.cos(latitude * Math.PI / 180));
-    updateGame();
-}
-
-function simRotate(degrees) {
-    if (document.activeElement) {
-        document.activeElement.blur();
-    }
-    heading = normalize(heading + degrees);
-    updateRadar();
-}
-
-document.getElementById("btnN").addEventListener("click", () => simMove(0, 3));
-document.getElementById("btnS").addEventListener("click", () => simMove(0, -3));
-document.getElementById("btnW").addEventListener("click", () => simMove(-3, 0));
-document.getElementById("btnO").addEventListener("click", () => simMove(3, 0));
-document.getElementById("btnRotLeft").addEventListener("click", () => simRotate(-15));
-document.getElementById("btnRotRight").addEventListener("click", () => simRotate(15));
-
 function updateGame(){
     if(latitude === null || longitude === null || TARGET_LAT === null || TARGET_LON === null) return;
 
@@ -427,7 +368,7 @@ function updateGame(){
     accuracyOutput.textContent = "GPS-Genauigkeit: ±" + accuracy + " m";
     bearingOutput.textContent = "Zielrichtung: " + Math.round(targetBearing) + "°";
 
-    // Automatische Kameraumschaltung bei <= 20 Metern
+    // Automatische Umschaltung zur Kamera bei <= 20 Metern
     if(distance <= TARGET_RADIUS){
         status.textContent = "🎯 ZIELBEREICH ERREICHT";
         if (gameScreen.style.display !== "none") {
