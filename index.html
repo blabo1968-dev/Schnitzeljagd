@@ -67,7 +67,6 @@
             touch-action: manipulation;
         }
 
-        /* Inaktiver / Gesperrter Button */
         button:disabled {
             background: #444 !important;
             color: #888 !important;
@@ -219,9 +218,9 @@
         <h1 style="font-size: clamp(18px, 4vw, 24px); margin-bottom: 15px; color: #ff6600;">🎃 HALLOWEEN GEISTERJAGD 👻</h1>
         
         <div class="control-panel" style="max-width: 340px;">
-            <strong style="color: #ff6600; font-size: 15px;">🚩 SCHNELLER TEST-MODUS</strong><br><br>
+            <strong style="color: #ff6600; font-size: 15px;">🚩 TEST-MODUS (Stadt-optimiert)</strong><br><br>
             <span style="color: #ccc; font-size: 12px; line-height: 1.4;">
-                Spüre <strong>5 Geister & Kürbisse</strong> auf! Du musst bis auf <strong>unter 5 Meter</strong> herangehen, um sie einzusaugen.
+                Spüre <strong>5 Geister & Kürbisse</strong> auf! Ab <strong>unter 15 Metern</strong> Abstand ist der Geist bereit zum Einsaugen.
             </span>
         </div>
 
@@ -282,7 +281,7 @@
 let waypoints = [];
 let currentIndex = 0;
 const TOTAL_STATIONS = 5;
-const TARGET_RADIUS = 5; // Maximal 5 Meter Entfernung zum Einsaugen
+const TARGET_RADIUS = 15; // Erweitert auf 15 Meter für perfekte Stadt-Toleranz!
 const RADAR_RANGE = 100;
 
 const HALLOWEEN_ICONS = ["👻", "🎃", "👻", "🎃", "👻"];
@@ -519,21 +518,19 @@ function updateCameraOverlay() {
 
     arObject.textContent = currentTarget.icon;
 
-    // PRÜFUNG: Nur freischalten, wenn Entfernung <= 5 Meter ist!
+    // Freischaltung bei <= 15 Metern
     if (distance <= TARGET_RADIUS) {
         cameraHeaderTitle.textContent = "🎯 JETZT EINSAUGEN!";
         cameraHeaderTitle.style.color = "#00ff66";
         arObject.style.opacity = "1";
         arObject.style.fontSize = "90px";
         
-        // Button freischalten
         foundButton.disabled = false;
         foundButton.style.background = "#00ff66";
     } else {
-        // Zu weit weg: Button sperren!
         foundButton.disabled = true;
         
-        if (distance <= 15) {
+        if (distance <= 30) {
             cameraHeaderTitle.textContent = "📷 NÄHER HERANGEHEN!";
             cameraHeaderTitle.style.color = "#ff6600";
             arObject.style.opacity = "0.7";
