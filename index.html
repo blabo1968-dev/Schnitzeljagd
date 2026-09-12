@@ -196,11 +196,36 @@
         .control-panel { 
             background: #222; 
             border: 1px solid #444; 
-            padding: 15px; 
+            padding: 12px; 
             border-radius: 8px; 
-            margin-bottom: 15px; 
+            margin-bottom: 10px; 
             width: 100%; 
             font-size: 13px;
+        }
+
+        .radius-selector {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .radius-btn {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 6px 12px;
+            font-size: 13px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .radius-btn.active {
+            background: #ff6600;
+            color: #000;
+            border-color: #ff6600;
+            font-weight: bold;
         }
         
         .info-text { font-size: clamp(13px, 3vw, 15px); margin: 3px 0; }
@@ -215,13 +240,19 @@
 
     <!-- START-BILDSCHIRM -->
     <div id="startScreen" class="screen">
-        <h1 style="font-size: clamp(18px, 4vw, 24px); margin-bottom: 15px; color: #ff6600;">🎃 HALLOWEEN GEISTERJAGD 👻</h1>
+        <h1 style="font-size: clamp(18px, 4vw, 24px); margin-bottom: 10px; color: #ff6600;">🎃 HALLOWEEN GEISTERJAGD 👻</h1>
         
         <div class="control-panel" style="max-width: 340px;">
-            <strong style="color: #ff6600; font-size: 15px;">🚩 MODUS: 4-Minuten-Flucht-Timer</strong><br><br>
-            <span style="color: #ccc; font-size: 12px; line-height: 1.4;">
-                Erreicht den Geist im <strong>15-Meter-Radius</strong>. Versperrt ein Haus den Weg, flüchtet und wechselt der Geist automatisch nach 4 Minuten seine Position!
-            </span>
+            <strong style="color: #ff6600; font-size: 14px;">🎯 SPIELFELD-GRÖSSE WÄHLEN:</strong><br>
+            <div class="radius-selector">
+                <button type="button" class="radius-btn" onclick="setPlayRadius(20)">Garten (20m)</button>
+                <button type="button" class="radius-btn active" onclick="setPlayRadius(50)">Park (50m)</button>
+                <button type="button" class="radius-btn" onclick="setPlayRadius(100)">Stadt (100m)</button>
+            </div>
+        </div>
+
+        <div class="control-panel" style="max-width: 340px; font-size: 12px; color: #ccc; line-height: 1.3;">
+            <span>ℹ️ 15m Fang-Radius (Stadt-Toleranz) & 4-Minuten-Flucht-Timer sind aktiv.</span>
         </div>
 
         <button id="startButton">GEISTERJAGD STARTEN</button>
@@ -284,8 +315,9 @@ let waypoints = [];
 let currentIndex = 0;
 const TOTAL_STATIONS = 5;
 const TARGET_RADIUS = 15; 
-const RADAR_RANGE = 100;
-const ESCAPE_TIME_SECONDS = 240; // Exakt 4 Minuten Flucht-Timer
+let selectedPlayRadius = 50; // Standardmäßig 50m
+let RADAR_RANGE = 100; // Passt sich dynamisch an
+const ESCAPE_TIME_SECONDS = 240; 
 
 let timeLeft = ESCAPE_TIME_SECONDS;
 let escapeTimerInterval = null;
@@ -307,6 +339,20 @@ let targetAngleRelative = 0;
 let hasPinged = false;
 
 let audioCtx = null;
+
+function setPlayRadius(meters) {
+    selectedPlayRadius = meters;
+    RADAR_RANGE = Math.max(100, meters * 2); // Radar-Ansichstweite dynamisch anpassen
+    
+    // UI Buttons aktualisieren
+    const buttons = document.querySelectorAll('.radius-btn');
+    buttons.forEach(btn => {
+        btn.classList.remove('active');
+        if(btn.textContent.includes(meters + 'm')) {
+            btn.classList.add('active');
+        }
+    });
+}
 
 function playSonarPing() {
     try {
@@ -380,17 +426,17 @@ const camera = document.getElementById("camera");
 function generateTestWaypoints(userLat, userLon) {
     waypoints = [];
     const metersPerDegree = 111000;
-    const offsets = [
-        { dn: 25, de: 15 },
-        { dn: -20, de: 30 },
-        { dn: 35, de: -25 },
-        { dn: -30, de: -20 },
-        { dn: 40, de: 35 }
-    ];
-
+    
+    // Generiert Wegpunkte basierend auf dem vom Spieler gewählten Radius
     for (let i = 0; i < TOTAL_STATIONS; i++) {
-        const latOffset = offsets[i].dn / metersPerDegree;
-        const lonOffset = offsets[i].de / (metersPerDegree * Math.cos(userLat * Math.PI / 180));
+        const randomAngle = Math.random() * 2 * Math.PI;
+        const randomDist = 15 + Math.random() * (selectedPlayRadius - 15); // Zwischen 15m und gewähltem Radius
+        
+        const dn = Math.sin(randomAngle) * randomDist;
+        const de = Math.cos(randomAngle) * randomDist;
+
+        const latOffset = dn / metersPerDegree;
+        const lonOffset = de / (metersPerDegree * Math.cos(userLat * Math.PI / 180));
         
         waypoints.push({
             id: i + 1,
@@ -402,14 +448,12 @@ function generateTestWaypoints(userLat, userLon) {
     currentIndex = 0;
 }
 
-// Funktion zum Neupositionieren des aktuellen Geistes in der Nähe (Teleport)
 function relocateCurrentWaypoint() {
     if (latitude === null || longitude === null) return;
     
     const metersPerDegree = 111000;
-    // Generiere zufälligen Offset zwischen 20 und 40 Metern in eine zufällige Richtung
     const randomAngle = Math.random() * 2 * Math.PI;
-    const randomDist = 20 + Math.random() * 20; 
+    const randomDist = 20 + Math.random() * 30; 
     
     const dn = Math.sin(randomAngle) * randomDist;
     const de = Math.cos(randomAngle) * randomDist;
@@ -420,10 +464,7 @@ function relocateCurrentWaypoint() {
     waypoints[currentIndex].lat = latitude + latOffset;
     waypoints[currentIndex].lon = longitude + lonOffset;
 
-    // Timer zurücksetzen
     timeLeft = ESCAPE_TIME_SECONDS;
-    
-    // Kurzer Hinweis an den Spieler
     alert("👻 Der Geist hat sich unruhig wegbewegt und taucht gleich in deiner Nähe an einem neuen Ort auf!");
     updateGame();
 }
@@ -445,7 +486,7 @@ function startEscapeTimer() {
         if (timeLeft <= 0) {
             clearInterval(escapeTimerInterval);
             relocateCurrentWaypoint();
-            startEscapeTimer(); // Timer von vorn starten
+            startEscapeTimer();
         }
     }, 1000);
 }
@@ -666,7 +707,7 @@ function advanceToNextStation() {
         gameScreen.style.display = "none";
         success.style.display = "flex";
     } else {
-        startEscapeTimer(); // Timer für die nächste Station frisch starten
+        startEscapeTimer();
         if (isCameraActive) {
             stopCamera();
             isCameraActive = false;
