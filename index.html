@@ -305,7 +305,7 @@
         <h1 style="color: #ff6600; font-size: clamp(20px, 5vw, 28px); margin-bottom: 10px;">🎃 GEISTERJAGD BEENDET! 👻</h1>
         <p style="margin-bottom: 15px; font-size: 14px; line-height: 1.5;">
             Du hast alle Geister & Kürbisse erfolgreich eingesaugt!<br><br>
-            <strong style="color: #00ff66;">Hol dir deine Belohnung an der Theke ab! 🍬</strong>
+            <strong style="color: #00ff66;">Nun bist du geprüfter Geisterjäger! 👻</strong>
         </p>
         <button id="again">NEUES TESTSPIEL</button>
     </div>
@@ -315,8 +315,8 @@ let waypoints = [];
 let currentIndex = 0;
 const TOTAL_STATIONS = 5;
 const TARGET_RADIUS = 15; 
-let selectedPlayRadius = 50; // Standardmäßig 50m
-let RADAR_RANGE = 100; // Passt sich dynamisch an
+let selectedPlayRadius = 50; 
+let RADAR_RANGE = 100; 
 const ESCAPE_TIME_SECONDS = 240; 
 
 let timeLeft = ESCAPE_TIME_SECONDS;
@@ -342,9 +342,8 @@ let audioCtx = null;
 
 function setPlayRadius(meters) {
     selectedPlayRadius = meters;
-    RADAR_RANGE = Math.max(100, meters * 2); // Radar-Ansichstweite dynamisch anpassen
+    RADAR_RANGE = Math.max(100, meters * 2);
     
-    // UI Buttons aktualisieren
     const buttons = document.querySelectorAll('.radius-btn');
     buttons.forEach(btn => {
         btn.classList.remove('active');
@@ -427,10 +426,9 @@ function generateTestWaypoints(userLat, userLon) {
     waypoints = [];
     const metersPerDegree = 111000;
     
-    // Generiert Wegpunkte basierend auf dem vom Spieler gewählten Radius
     for (let i = 0; i < TOTAL_STATIONS; i++) {
         const randomAngle = Math.random() * 2 * Math.PI;
-        const randomDist = 15 + Math.random() * (selectedPlayRadius - 15); // Zwischen 15m und gewähltem Radius
+        const randomDist = 15 + Math.random() * (selectedPlayRadius - 15);
         
         const dn = Math.sin(randomAngle) * randomDist;
         const de = Math.cos(randomAngle) * randomDist;
