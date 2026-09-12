@@ -218,9 +218,9 @@
         <h1 style="font-size: clamp(18px, 4vw, 24px); margin-bottom: 15px; color: #ff6600;">🎃 HALLOWEEN GEISTERJAGD 👻</h1>
         
         <div class="control-panel" style="max-width: 340px;">
-            <strong style="color: #ff6600; font-size: 15px;">🚩 TEST-MODUS (Stadt-optimiert)</strong><br><br>
+            <strong style="color: #ff6600; font-size: 15px;">🚩 MODUS: 4-Minuten-Flucht-Timer</strong><br><br>
             <span style="color: #ccc; font-size: 12px; line-height: 1.4;">
-                Spüre <strong>5 Geister & Kürbisse</strong> auf! Ab <strong>unter 15 Metern</strong> Abstand ist der Geist bereit zum Einsaugen.
+                Erreicht den Geist im <strong>15-Meter-Radius</strong>. Versperrt ein Haus den Weg, flüchtet und wechselt der Geist automatisch nach 4 Minuten seine Position!
             </span>
         </div>
 
@@ -230,7 +230,8 @@
     <!-- SPIEL-BILDSCHIRM -->
     <div id="gameScreen" class="screen">
         <div id="stationBadge" class="station-badge">STATION 1 VON 5</div>
-        <div id="status" style="font-weight: bold; color: #ff6600; font-size: 16px; margin-bottom: 5px;">🔎 GEIST SUCHEN</div>
+        <div id="status" style="font-weight: bold; color: #ff6600; font-size: 16px; margin-bottom: 3px;">🔎 GEIST SUCHEN</div>
+        <div id="escapeTimerText" style="font-size: 12px; color: #aaa; margin-bottom: 5px;">Flucht in: 04:00</div>
         
         <div id="radar">
             <div id="sweep"></div>
@@ -248,7 +249,8 @@
     <!-- KAMERA-BILDSCHIRM -->
     <div id="cameraScreen" class="screen">
         <div id="cameraStationBadge" class="station-badge">STATION 1 VON 5</div>
-        <h3 id="cameraHeaderTitle" style="color: #ff6600; margin-bottom: 5px;">📷 KAMERA-SUCHE</h3>
+        <h3 id="cameraHeaderTitle" style="color: #ff6600; margin-bottom: 3px;">📷 KAMERA-SUCHE</h3>
+        <div id="cameraTimerText" style="font-size: 12px; color: #aaa; margin-bottom: 5px;">Flucht in: 04:00</div>
         
         <div class="camera-container">
             <video id="camera" autoplay playsinline muted></video>
@@ -281,8 +283,12 @@
 let waypoints = [];
 let currentIndex = 0;
 const TOTAL_STATIONS = 5;
-const TARGET_RADIUS = 15; // Erweitert auf 15 Meter für perfekte Stadt-Toleranz!
+const TARGET_RADIUS = 15; 
 const RADAR_RANGE = 100;
+const ESCAPE_TIME_SECONDS = 240; // Exakt 4 Minuten Flucht-Timer
+
+let timeLeft = ESCAPE_TIME_SECONDS;
+let escapeTimerInterval = null;
 
 const HALLOWEEN_ICONS = ["👻", "🎃", "👻", "🎃", "👻"];
 
@@ -304,60 +310,40 @@ let audioCtx = null;
 
 function playSonarPing() {
     try {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === "suspended") {
-            audioCtx.resume();
-        }
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === "suspended") audioCtx.resume();
 
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-
         osc.type = "sine";
         osc.frequency.setValueAtTime(1240, audioCtx.currentTime);
-
         gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.8);
-
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-
         osc.start();
         osc.stop(audioCtx.currentTime + 0.8);
-    } catch (e) {
-        console.log("Audio blockiert.");
-    }
+    } catch (e) { console.log("Audio blockiert."); }
 }
 
 function playVacuumSound() {
     try {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === "suspended") {
-            audioCtx.resume();
-        }
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === "suspended") audioCtx.resume();
 
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-
         osc.type = "sawtooth";
         osc.frequency.setValueAtTime(150, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.6);
         osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 1.2);
-
         gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.2);
-
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-
         osc.start();
         osc.stop(audioCtx.currentTime + 1.2);
-    } catch (e) {
-        console.log("Audio blockiert.");
-    }
+    } catch (e) { console.log("Audio blockiert."); }
 }
 
 const startScreen = document.getElementById("startScreen");
@@ -372,6 +358,8 @@ const foundButton = document.getElementById("foundButton");
 const againButton = document.getElementById("again");
 
 const status = document.getElementById("status");
+const escapeTimerText = document.getElementById("escapeTimerText");
+const cameraTimerText = document.getElementById("cameraTimerText");
 const distanceOutput = document.getElementById("distance");
 const accuracyOutput = document.getElementById("accuracy");
 const bearingOutput = document.getElementById("bearing");
@@ -392,7 +380,6 @@ const camera = document.getElementById("camera");
 function generateTestWaypoints(userLat, userLon) {
     waypoints = [];
     const metersPerDegree = 111000;
-    
     const offsets = [
         { dn: 25, de: 15 },
         { dn: -20, de: 30 },
@@ -415,14 +402,60 @@ function generateTestWaypoints(userLat, userLon) {
     currentIndex = 0;
 }
 
+// Funktion zum Neupositionieren des aktuellen Geistes in der Nähe (Teleport)
+function relocateCurrentWaypoint() {
+    if (latitude === null || longitude === null) return;
+    
+    const metersPerDegree = 111000;
+    // Generiere zufälligen Offset zwischen 20 und 40 Metern in eine zufällige Richtung
+    const randomAngle = Math.random() * 2 * Math.PI;
+    const randomDist = 20 + Math.random() * 20; 
+    
+    const dn = Math.sin(randomAngle) * randomDist;
+    const de = Math.cos(randomAngle) * randomDist;
+
+    const latOffset = dn / metersPerDegree;
+    const lonOffset = de / (metersPerDegree * Math.cos(latitude * Math.PI / 180));
+
+    waypoints[currentIndex].lat = latitude + latOffset;
+    waypoints[currentIndex].lon = longitude + lonOffset;
+
+    // Timer zurücksetzen
+    timeLeft = ESCAPE_TIME_SECONDS;
+    
+    // Kurzer Hinweis an den Spieler
+    alert("👻 Der Geist hat sich unruhig wegbewegt und taucht gleich in deiner Nähe an einem neuen Ort auf!");
+    updateGame();
+}
+
+function startEscapeTimer() {
+    if (escapeTimerInterval) clearInterval(escapeTimerInterval);
+    timeLeft = ESCAPE_TIME_SECONDS;
+
+    escapeTimerInterval = setInterval(() => {
+        timeLeft--;
+        
+        let mins = Math.floor(timeLeft / 60);
+        let secs = timeLeft % 60;
+        let timeStr = "Flucht in: " + (mins < 10 ? "0" : "") + mins + ":" + (secs < 10 ? "0" : "") + secs;
+        
+        escapeTimerText.textContent = timeStr;
+        cameraTimerText.textContent = timeStr;
+
+        if (timeLeft <= 0) {
+            clearInterval(escapeTimerInterval);
+            relocateCurrentWaypoint();
+            startEscapeTimer(); // Timer von vorn starten
+        }
+    }, 1000);
+}
+
 startButton.addEventListener("click", () => {
     startGame();
 });
 
 function startGame(){
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     if ("geolocation" in navigator) {
         navigator.geolocation.watchPosition(
@@ -436,23 +469,19 @@ function startGame(){
                     startScreen.style.display = "none";
                     gameScreen.style.display = "flex";
                     startRadar();
+                    startEscapeTimer();
                 }
                 updateGame();
             },
-            (err) => {
-                alert("GPS konnte nicht abgerufen werden. Bitte Standort freigeben.");
-            },
+            (err) => { alert("GPS konnte nicht abgerufen werden. Bitte Standort freigeben."); },
             { enableHighAccuracy: true, maximumAge: 1000, timeout: 5000 }
         );
     }
 
     if (window.DeviceOrientationEvent) {
         window.addEventListener("deviceorientation", (e) => {
-            if (e.webkitCompassHeading) {
-                heading = e.webkitCompassHeading;
-            } else if (e.alpha) {
-                heading = 360 - e.alpha;
-            }
+            if (e.webkitCompassHeading) heading = e.webkitCompassHeading;
+            else if (e.alpha) heading = 360 - e.alpha;
             updateRadar();
             updateCameraOverlay();
         }, true);
@@ -518,7 +547,6 @@ function updateCameraOverlay() {
 
     arObject.textContent = currentTarget.icon;
 
-    // Freischaltung bei <= 15 Metern
     if (distance <= TARGET_RADIUS) {
         cameraHeaderTitle.textContent = "🎯 JETZT EINSAUGEN!";
         cameraHeaderTitle.style.color = "#00ff66";
@@ -562,16 +590,13 @@ function startRadar(){
 
         if (angleDiff < 12) {
             target.style.opacity = "1";
-            
             if (!hasPinged) {
                 playSonarPing();
                 hasPinged = true;
             }
         } else {
             target.style.opacity = "0";
-            if (angleDiff > 30) {
-                hasPinged = false;
-            }
+            if (angleDiff > 30) hasPinged = false;
         }
 
         radarAnimation = requestAnimationFrame(animate);
@@ -634,12 +659,14 @@ function advanceToNextStation() {
     currentIndex++;
     
     if (currentIndex >= TOTAL_STATIONS) {
+        if (escapeTimerInterval) clearInterval(escapeTimerInterval);
         stopCamera();
         isCameraActive = false;
         cameraScreen.style.display = "none";
         gameScreen.style.display = "none";
         success.style.display = "flex";
     } else {
+        startEscapeTimer(); // Timer für die nächste Station frisch starten
         if (isCameraActive) {
             stopCamera();
             isCameraActive = false;
@@ -666,6 +693,7 @@ againButton.addEventListener("click", function(){
     }
     gameScreen.style.display = "flex";
     startRadar();
+    startEscapeTimer();
     updateGame();
 });
 
