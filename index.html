@@ -2,98 +2,420 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS Radar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GPS Halloween Geisterjagd - Blankenhagen Spieleentwicklung</title>
     <style>
-        body { margin: 0; font-family: sans-serif; background: #121212; color: white; text-align: center; }
-        .screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            font-family: system-ui, -apple-system, sans-serif; 
+            background: #121212; 
+            color: white; 
+            text-align: center;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        header {
+            background: #1a1a1a;
+            padding: 8px 10px;
+            border-bottom: 2px solid #ff6600;
+            flex-shrink: 0;
+        }
+        header h2 {
+            font-size: clamp(14px, 3.5vw, 18px);
+            color: #ff6600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        header p {
+            font-size: clamp(10px, 2.2vw, 12px);
+            color: #aaa;
+            font-weight: bold;
+        }
+
+        .screen { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            flex: 1;
+            padding: 10px; 
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
         #gameScreen, #cameraScreen, #success { display: none; }
-        button { padding: 15px 25px; font-size: 16px; margin-top: 15px; cursor: pointer; background: #00e5ff; border: none; font-weight: bold; }
-        #radar { width: 250px; height: 250px; border-radius: 50%; border: 2px solid #00e5ff; position: relative; margin: 20px auto; overflow: hidden; background: rgba(0,229,255,0.05); }
+
+        button { 
+            padding: 12px 20px; 
+            font-size: clamp(14px, 3.5vw, 16px); 
+            margin: 8px; 
+            cursor: pointer; 
+            background: #ff6600; 
+            border: none; 
+            font-weight: bold; 
+            color: #000; 
+            border-radius: 6px;
+            touch-action: manipulation;
+        }
+
+        button:disabled {
+            background: #444 !important;
+            color: #888 !important;
+            cursor: not-allowed;
+            border: 1px solid #555;
+        }
+
+        .station-badge {
+            background: rgba(255, 102, 0, 0.15);
+            border: 1px solid #ff6600;
+            color: #ff6600;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        #radar { 
+            width: min(65vw, 45vh, 260px); 
+            height: min(65vw, 45vh, 260px); 
+            border-radius: 50%; 
+            border: 2px solid #ff6600; 
+            position: relative; 
+            margin: 10px auto; 
+            overflow: hidden; 
+            background: rgba(255,102,0,0.05); 
+            flex-shrink: 0;
+        }
         #sweep, #sweepGlow { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; pointer-events: none; }
-        #sweep { background: conic-gradient(from 0deg, rgba(0,229,255,0.4), transparent 60deg); }
-        #target { width: 12px; height: 12px; background: red; border-radius: 50%; position: absolute; transform: translate(-50%, -50%); top: 50%; left: 50%; }
-        #errorBox { color: #ff5252; background: #2a0000; padding: 10px; border-radius: 5px; display: none; margin-bottom: 15px; white-space: pre-line; }
-        video { width: 100%; max-width: 400px; height: auto; }
+        #sweep { background: conic-gradient(from 0deg, rgba(255,102,0,0.4), transparent 60deg); }
+        
+        #target { 
+            width: 16px; 
+            height: 16px; 
+            background: #ffff00; 
+            border-radius: 50%; 
+            position: absolute; 
+            transform: translate(-50%, -50%); 
+            top: 50%; 
+            left: 50%; 
+            box-shadow: 0 0 12px #ffff00, 0 0 24px #ffff00; 
+            opacity: 0; 
+            transition: opacity 0.8s ease-out; 
+        }
+        
+        .camera-container {
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+            height: 280px;
+            margin: 10px auto;
+            overflow: hidden;
+            border-radius: 8px;
+            border: 2px solid #ff6600;
+        }
+
+        video { 
+            width: 100%; 
+            height: 100%; 
+            background: #222; 
+            object-fit: cover; 
+        }
+
+        .camera-overlay {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #ff6600;
+            border-radius: 8px;
+            padding: 6px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            font-size: 14px;
+            color: #ff6600;
+            z-index: 10;
+        }
+
+        #arObject {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 70px;
+            pointer-events: none;
+            transition: font-size 0.3s ease-out, opacity 0.3s ease-out;
+            filter: drop-shadow(0 0 15px rgba(255, 102, 0, 0.8));
+            animation: floatAnim 2.5s ease-in-out infinite alternate;
+            z-index: 5;
+        }
+
+        @keyframes floatAnim {
+            0% { transform: translate(-50%, -55%) scale(1); }
+            100% { transform: translate(-50%, -45%) scale(1.08); }
+        }
+
+        .sucking {
+            animation: suckAnim 1.2s forwards !important;
+        }
+
+        @keyframes suckAnim {
+            0% {
+                transform: translate(-50%, -50%) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: translate(-50%, -50%) rotate(540deg) scale(0.5);
+                opacity: 0.8;
+                filter: drop-shadow(0 0 30px #ff6600);
+            }
+            100% {
+                transform: translate(-50%, 150%) rotate(1080deg) scale(0);
+                opacity: 0;
+            }
+        }
+
+        #cameraArrow {
+            font-size: 20px;
+            display: inline-block;
+            transition: transform 0.2s ease-out;
+        }
+        
+        .control-panel { 
+            background: #222; 
+            border: 1px solid #444; 
+            padding: 12px; 
+            border-radius: 8px; 
+            margin-bottom: 10px; 
+            width: 100%; 
+            font-size: 13px;
+        }
+
+        .radius-selector {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .radius-btn {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 6px 12px;
+            font-size: 13px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .radius-btn.active {
+            background: #ff6600;
+            color: #000;
+            border-color: #ff6600;
+            font-weight: bold;
+        }
+        
+        .info-text { font-size: clamp(13px, 3vw, 15px); margin: 3px 0; }
     </style>
 </head>
 <body>
 
+    <header>
+        <h2>Blankenhagen Spieleentwicklung</h2>
+        <p>Halloween Geisterjagd – Prototyp</p>
+    </header>
+
+    <!-- START-BILDSCHIRM -->
     <div id="startScreen" class="screen">
-        <div id="errorBox"></div>
-        <h1>GPS RADAR</h1>
-        <button id="startButton">SPIEL STARTEN</button>
+        <h1 style="font-size: clamp(18px, 4vw, 24px); margin-bottom: 10px; color: #ff6600;">🎃 HALLOWEEN GEISTERJAGD 👻</h1>
+        
+        <div class="control-panel" style="max-width: 340px;">
+            <strong style="color: #ff6600; font-size: 14px;">🎯 SPIELFELD-GRÖSSE WÄHLEN:</strong><br>
+            <div class="radius-selector">
+                <button type="button" class="radius-btn" onclick="setPlayRadius(20)">Garten (20m)</button>
+                <button type="button" class="radius-btn active" onclick="setPlayRadius(50)">Park (50m)</button>
+                <button type="button" class="radius-btn" onclick="setPlayRadius(100)">Stadt (100m)</button>
+            </div>
+        </div>
+
+        <div class="control-panel" style="max-width: 340px; font-size: 12px; color: #ccc; line-height: 1.4;">
+            <span>ℹ️ 15m Fang-Radius & 4-Minuten-Flucht-Timer aktiv.</span><br>
+            <strong style="color: #ffcc00; display: block; margin-top: 6px;">Achtung im Straßenverkehr: Bitte achtet auf Fahrzeuge und tragt helle Kleidung!</strong>
+        </div>
+
+        <button id="startButton">GEISTERJAGD STARTEN</button>
     </div>
 
+    <!-- SPIEL-BILDSCHIRM -->
     <div id="gameScreen" class="screen">
-        <div id="status">SCHEIBE SCANNEN</div>
+        <div id="stationBadge" class="station-badge">STATION 1 VON 5</div>
+        <div id="status" style="font-weight: bold; color: #ff6600; font-size: 16px; margin-bottom: 3px;">🔎 GEIST SUCHEN</div>
+        <div id="escapeTimerText" style="font-size: 12px; color: #aaa; margin-bottom: 5px;">Flucht in: 04:00</div>
+        
         <div id="radar">
             <div id="sweep"></div>
             <div id="sweepGlow"></div>
             <div id="target"></div>
         </div>
-        <div>Entfernung: <span id="distance">-</span> m</div>
-        <div id="accuracy">GPS-Genauigkeit: -</div>
-        <div id="bearing">Zielrichtung: -</div>
-        <button id="cameraButton" style="display:none;">KAMERA ÖFFNEN</button>
+
+        <div class="info-text">Entfernung: <span id="distance" style="font-weight: bold; color: #ff6600;">-</span> m</div>
+        <div class="info-text" id="accuracy">GPS-Genauigkeit: -</div>
+        <div class="info-text" id="bearing">Zielrichtung: -</div>
+        
+        <button id="cameraToggleButton" style="background: #ff6600; margin-top: 10px;">📷 KAMERA ANSCHALTEN</button>
     </div>
 
+    <!-- KAMERA-BILDSCHIRM -->
     <div id="cameraScreen" class="screen">
-        <video id="camera" autoplay playsinline></video>
-        <button id="foundButton">ZIEL GEFUNDEN</button>
+        <div id="cameraStationBadge" class="station-badge">STATION 1 VON 5</div>
+        <h3 id="cameraHeaderTitle" style="color: #ff6600; margin-bottom: 3px;">📷 KAMERA-SUCHE</h3>
+        <div id="cameraTimerText" style="font-size: 12px; color: #aaa; margin-bottom: 5px;">Flucht in: 04:00</div>
+        
+        <div class="camera-container">
+            <video id="camera" autoplay playsinline muted></video>
+            
+            <div class="camera-overlay">
+                <span id="cameraArrow">⬆️</span>
+                <span id="cameraDistText">-- m</span>
+            </div>
+
+            <div id="arObject">👻</div>
+        </div>
+
+        <div style="margin-top: 5px;">
+            <button id="cameraOffButton" style="background: #ff5252; color: #fff;">📷 ZURÜCK ZUM RADAR</button>
+            <button id="foundButton" disabled style="background: #00ff66; color: #000;">🎯 GEIST EINSAUGEN</button>
+        </div>
     </div>
 
+    <!-- ERFOLGS-BILDSCHIRM -->
     <div id="success" class="screen">
-        <h1>HERZLICHEN GLÜCKWUNSCH!</h1>
-        <button id="again">NOCH EINMAL</button>
+        <h1 style="color: #ff6600; font-size: clamp(20px, 5vw, 28px); margin-bottom: 10px;">🎃 GEISTERJAGD BEENDET! 👻</h1>
+        <p style="margin-bottom: 15px; font-size: 14px; line-height: 1.5;">
+            Du hast alle Geister & Kürbisse erfolgreich eingesaugt!<br><br>
+            <strong style="color: #00ff66;">Nun bist du geprüfter Geisterjäger! 👻</strong>
+        </p>
+        <button id="again">NEUES TESTSPIEL</button>
     </div>
 
 <script>
-/* =====================================================
-   ZIEL-EINSTELLUNGEN (DYNAMISCH)
-===================================================== */
-let TARGET_LAT = null;
-let TARGET_LON = null;
-const SPAWN_DISTANCE_METERS = 25;
+let waypoints = [];
+let currentIndex = 0;
+const TOTAL_STATIONS = 5;
+const TARGET_RADIUS = 15; 
+let selectedPlayRadius = 50; 
+let RADAR_RANGE = 100; 
+const ESCAPE_TIME_SECONDS = 240; 
 
-/* =====================================================
-   SPIEL-EINSTELLUNGEN
-===================================================== */
-const TARGET_RADIUS = 20;
-const RADAR_RANGE = 500;
+let timeLeft = ESCAPE_TIME_SECONDS;
+let escapeTimerInterval = null;
 
-/* =====================================================
-   VARIABLEN
-===================================================== */
-let gpsWatch = null;
-let latitude = null;
+const HALLOWEEN_ICONS = ["👻", "🎃", "👻", "🎃", "👻"];
+
+let latitude = null; 
 let longitude = null;
-let accuracy = null;
+let accuracy = 0;      
 let targetBearing = 0;
 let heading = 0;
-let orientationAvailable = false;
 let cameraStream = null;
+let isCameraActive = false;
+let isSucking = false;
+
 let sweepAngle = 0;
 let radarAnimation = null;
+let targetAngleRelative = 0;
+let hasPinged = false;
 
-/* =====================================================
-   ELEMENTE
-===================================================== */
+let audioCtx = null;
+
+function setPlayRadius(meters) {
+    selectedPlayRadius = meters;
+    RADAR_RANGE = Math.max(100, meters * 2);
+    
+    const buttons = document.querySelectorAll('.radius-btn');
+    buttons.forEach(btn => {
+        btn.classList.remove('active');
+        if(btn.textContent.includes(meters + 'm')) {
+            btn.classList.add('active');
+        }
+    });
+}
+
+function playSonarPing() {
+    try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === "suspended") audioCtx.resume();
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(1240, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.8);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.8);
+    } catch (e) { console.log("Audio blockiert."); }
+}
+
+function playVacuumSound() {
+    try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === "suspended") audioCtx.resume();
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.6);
+        osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 1.2);
+        gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.2);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 1.2);
+    } catch (e) { console.log("Audio blockiert."); }
+}
+
 const startScreen = document.getElementById("startScreen");
 const gameScreen = document.getElementById("gameScreen");
 const cameraScreen = document.getElementById("cameraScreen");
 const success = document.getElementById("success");
 
 const startButton = document.getElementById("startButton");
-const cameraButton = document.getElementById("cameraButton");
+const cameraToggleButton = document.getElementById("cameraToggleButton");
+const cameraOffButton = document.getElementById("cameraOffButton");
 const foundButton = document.getElementById("foundButton");
 const againButton = document.getElementById("again");
 
-const errorBox = document.getElementById("errorBox");
 const status = document.getElementById("status");
+const escapeTimerText = document.getElementById("escapeTimerText");
+const cameraTimerText = document.getElementById("cameraTimerText");
 const distanceOutput = document.getElementById("distance");
 const accuracyOutput = document.getElementById("accuracy");
 const bearingOutput = document.getElementById("bearing");
+const stationBadge = document.getElementById("stationBadge");
+const cameraStationBadge = document.getElementById("cameraStationBadge");
+
+const cameraHeaderTitle = document.getElementById("cameraHeaderTitle");
+const cameraArrow = document.getElementById("cameraArrow");
+const cameraDistText = document.getElementById("cameraDistText");
+const arObject = document.getElementById("arObject");
 
 const target = document.getElementById("target");
 const radar = document.getElementById("radar");
@@ -101,224 +423,195 @@ const sweep = document.getElementById("sweep");
 const sweepGlow = document.getElementById("sweepGlow");
 const camera = document.getElementById("camera");
 
-/* =====================================================
-   ZIEL AUTOMATISCH NAHE ERZEUGEN
-===================================================== */
-function setDynamicTarget(userLat, userLon) {
+function generateTestWaypoints(userLat, userLon) {
+    waypoints = [];
     const metersPerDegree = 111000;
-    const latOffset = SPAWN_DISTANCE_METERS / metersPerDegree;
-    const lonOffset = SPAWN_DISTANCE_METERS / (metersPerDegree * Math.cos(userLat * Math.PI / 180));
+    
+    for (let i = 0; i < TOTAL_STATIONS; i++) {
+        const randomAngle = Math.random() * 2 * Math.PI;
+        const randomDist = 15 + Math.random() * (selectedPlayRadius - 15);
+        
+        const dn = Math.sin(randomAngle) * randomDist;
+        const de = Math.cos(randomAngle) * randomDist;
 
-    TARGET_LAT = userLat + (latOffset * 0.7);
-    TARGET_LON = userLon + (lonOffset * 0.7);
-}
-
-/* =====================================================
-   START
-===================================================== */
-startButton.addEventListener("click", startGame);
-
-async function startGame(){
-    hideError();
-    startButton.disabled = true;
-    startButton.textContent = "STANDORT WIRD FREIGEGEBEN ...";
-
-    await askForOrientation();
-
-    const gpsOK = await askForGPS();
-    if(!gpsOK){
-        startButton.disabled = false;
-        startButton.textContent = "STANDORT ERNEUT FREIGEBEN";
-        return;
-    }
-
-    startButton.textContent = "KAMERA WIRD FREIGEGEBEN ...";
-    const cameraOK = await askForCamera();
-    if(!cameraOK){
-        startButton.disabled = false;
-        startButton.textContent = "KAMERA ERNEUT FREIGEBEN";
-        return;
-    }
-
-    startScreen.style.display = "none";
-    gameScreen.style.display = "flex";
-
-    startGPS();
-    startRadar();
-}
-
-/* =====================================================
-   GPS-BERECHTIGUNG
-===================================================== */
-function askForGPS(){
-    return new Promise(function(resolve){
-        if(!navigator.geolocation){
-            showError("Dieses Gerät unterstützt keine Standortbestimmung.");
-            resolve(false);
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            function(position){
-                latitude = position.coords.latitude;
-                longitude = position.coords.longitude;
-                accuracy = position.coords.accuracy;
-                resolve(true);
-            },
-            function(error){
-                if(error.code === 1){
-                    showError("📍 Standortzugriff wurde verweigert.\n\nBitte erlaube dieser Website den Standortzugriff in den Browser-Einstellungen.");
-                } else if(error.code === 2){
-                    showError("📍 Standort konnte nicht ermittelt werden.\n\nBitte GPS/Standort einschalten.");
-                } else {
-                    showError("📍 GPS-Suche hat zu lange gedauert.\n\nBitte erneut versuchen.");
-                }
-                resolve(false);
-            },
-            { enableHighAccuracy:true, timeout:15000, maximumAge:0 }
-        );
-    });
-}
-
-/* =====================================================
-   KAMERA-BERECHTIGUNG
-===================================================== */
-async function askForCamera(){
-    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-        showError("📷 Dieser Browser unterstützt keinen Kamerazugriff.");
-        return false;
-    }
-
-    try{
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: { ideal: "environment" } },
-            audio: false
+        const latOffset = dn / metersPerDegree;
+        const lonOffset = de / (metersPerDegree * Math.cos(userLat * Math.PI / 180));
+        
+        waypoints.push({
+            id: i + 1,
+            lat: userLat + latOffset,
+            lon: userLon + lonOffset,
+            icon: HALLOWEEN_ICONS[i]
         });
-        stream.getTracks().forEach(track => track.stop());
-        return true;
-    } catch(error){
-        showError("📷 Kamerazugriff wurde nicht erlaubt.\n\nBitte erlaube der Website den Kamerazugriff.");
-        return false;
     }
+    currentIndex = 0;
 }
 
-/* =====================================================
-   KOMPASS-BERECHTIGUNG
-===================================================== */
-async function askForOrientation(){
-    try{
-        if(typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function"){
-            const result = await DeviceOrientationEvent.requestPermission();
-            if(result !== "granted"){
-                orientationAvailable = false;
-                return;
-            }
+function relocateCurrentWaypoint() {
+    if (latitude === null || longitude === null) return;
+    
+    const metersPerDegree = 111000;
+    const randomAngle = Math.random() * 2 * Math.PI;
+    const randomDist = 20 + Math.random() * 30; 
+    
+    const dn = Math.sin(randomAngle) * randomDist;
+    const de = Math.cos(randomAngle) * randomDist;
+
+    const latOffset = dn / metersPerDegree;
+    const lonOffset = de / (metersPerDegree * Math.cos(latitude * Math.PI / 180));
+
+    waypoints[currentIndex].lat = latitude + latOffset;
+    waypoints[currentIndex].lon = longitude + lonOffset;
+
+    timeLeft = ESCAPE_TIME_SECONDS;
+    alert("👻 Der Geist hat sich unruhig wegbewegt und taucht gleich in deiner Nähe an einem neuen Ort auf!");
+    updateGame();
+}
+
+function startEscapeTimer() {
+    if (escapeTimerInterval) clearInterval(escapeTimerInterval);
+    timeLeft = ESCAPE_TIME_SECONDS;
+
+    escapeTimerInterval = setInterval(() => {
+        timeLeft--;
+        
+        let mins = Math.floor(timeLeft / 60);
+        let secs = timeLeft % 60;
+        let timeStr = "Flucht in: " + (mins < 10 ? "0" : "") + mins + ":" + (secs < 10 ? "0" : "") + secs;
+        
+        escapeTimerText.textContent = timeStr;
+        cameraTimerText.textContent = timeStr;
+
+        if (timeLeft <= 0) {
+            clearInterval(escapeTimerInterval);
+            relocateCurrentWaypoint();
+            startEscapeTimer();
         }
-        window.addEventListener("deviceorientationabsolute", orientationHandler, true);
-        window.addEventListener("deviceorientation", orientationHandler, true);
-        orientationAvailable = true;
-    } catch(error){
-        orientationAvailable = false;
+    }, 1000);
+}
+
+startButton.addEventListener("click", () => {
+    startGame();
+});
+
+function startGame(){
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    if ("geolocation" in navigator) {
+        navigator.geolocation.watchPosition(
+            (pos) => {
+                latitude = pos.coords.latitude;
+                longitude = pos.coords.longitude;
+                accuracy = Math.round(pos.coords.accuracy);
+                
+                if (waypoints.length === 0) {
+                    generateTestWaypoints(latitude, longitude);
+                    startScreen.style.display = "none";
+                    gameScreen.style.display = "flex";
+                    startRadar();
+                    startEscapeTimer();
+                }
+                updateGame();
+            },
+            (err) => { alert("GPS konnte nicht abgerufen werden. Bitte Standort freigeben."); },
+            { enableHighAccuracy: true, maximumAge: 1000, timeout: 5000 }
+        );
+    }
+
+    if (window.DeviceOrientationEvent) {
+        window.addEventListener("deviceorientation", (e) => {
+            if (e.webkitCompassHeading) heading = e.webkitCompassHeading;
+            else if (e.alpha) heading = 360 - e.alpha;
+            updateRadar();
+            updateCameraOverlay();
+        }, true);
     }
 }
 
-/* =====================================================
-   ORIENTIERUNG
-===================================================== */
-function orientationHandler(event){
-    let value = null;
-    if(typeof event.webkitCompassHeading === "number"){
-        value = event.webkitCompassHeading;
-    } else if(typeof event.alpha === "number"){
-        value = 360 - event.alpha;
-    }
-
-    if(value !== null){
-        heading = normalize(value);
-        updateRadar();
-    }
-}
-
-/* =====================================================
-   GPS TRACKING
-===================================================== */
-function startGPS(){
-    if(gpsWatch !== null){
-        navigator.geolocation.clearWatch(gpsWatch);
-    }
-    status.textContent = "📡 GPS AKTIV";
-
-    gpsWatch = navigator.geolocation.watchPosition(
-        function(position){
-            latitude = position.coords.latitude;
-            longitude = position.coords.longitude;
-            accuracy = position.coords.accuracy;
-
-            if(TARGET_LAT === null || TARGET_LON === null){
-                setDynamicTarget(latitude, longitude);
-            }
-            updateGame();
-        },
-        function(){
-            status.textContent = "⚠️ GPS-SIGNAL VERLOREN";
-        },
-        { enableHighAccuracy:true, maximumAge:1000, timeout:15000 }
-    );
-}
-
-/* =====================================================
-   SPIEL BERECHNEN
-===================================================== */
 function updateGame(){
-    if(latitude === null || longitude === null || TARGET_LAT === null || TARGET_LON === null) return;
+    if(latitude === null || longitude === null || waypoints.length === 0) return;
 
-    const distance = calculateDistance(latitude, longitude, TARGET_LAT, TARGET_LON);
-    targetBearing = calculateBearing(latitude, longitude, TARGET_LAT, TARGET_LON);
+    const currentTarget = waypoints[currentIndex];
+    const distance = calculateDistance(latitude, longitude, currentTarget.lat, currentTarget.lon);
+    targetBearing = calculateBearing(latitude, longitude, currentTarget.lat, currentTarget.lon);
 
-    distanceOutput.textContent = Math.round(distance);
-    accuracyOutput.textContent = "GPS-Genauigkeit: ±" + Math.round(accuracy) + " m";
+    const distRounded = Math.round(distance);
+    distanceOutput.textContent = distRounded;
+    accuracyOutput.textContent = "GPS-Genauigkeit: ±" + accuracy + " m";
     bearingOutput.textContent = "Zielrichtung: " + Math.round(targetBearing) + "°";
+    
+    const badgeText = `STATION ${currentIndex + 1} VON ${TOTAL_STATIONS}`;
+    stationBadge.textContent = badgeText;
+    cameraStationBadge.textContent = badgeText;
 
     if(distance <= TARGET_RADIUS){
-        status.textContent = "🎯 ZIELBEREICH ERREICHT";
-        cameraButton.style.display = "block";
+        status.textContent = "🎯 GEIST/KÜRBIS ERREICHT!";
+        status.style.color = "#00ff66";
     } else {
-        status.textContent = "🔎 ZIEL SUCHEN";
-        cameraButton.style.display = "none";
+        status.textContent = "🔎 GEIST SUCHEN";
+        status.style.color = "#ff6600";
     }
 
     updateRadar();
+    updateCameraOverlay();
 }
 
-/* =====================================================
-   RADAR
-===================================================== */
 function updateRadar(){
-    if(latitude === null || longitude === null || TARGET_LAT === null || TARGET_LON === null) return;
+    if(latitude === null || longitude === null || waypoints.length === 0) return;
 
-    const distance = calculateDistance(latitude, longitude, TARGET_LAT, TARGET_LON);
+    const currentTarget = waypoints[currentIndex];
+    const distance = calculateDistance(latitude, longitude, currentTarget.lat, currentTarget.lon);
     const size = radar.clientWidth;
     const center = size / 2;
 
     let radius = (distance / RADAR_RANGE) * center;
-    radius = Math.min(radius, center - 20);
+    radius = Math.min(radius, center - 10);
 
-    let angle = normalize(targetBearing - heading);
-    const radians = angle * Math.PI / 180;
+    targetAngleRelative = normalize(targetBearing - heading);
+    const radians = targetAngleRelative * Math.PI / 180;
 
     target.style.left = (center + Math.sin(radians) * radius) + "px";
     target.style.top = (center - Math.cos(radians) * radius) + "px";
+}
 
-    if(!orientationAvailable){
-        const northRadians = targetBearing * Math.PI / 180;
-        target.style.left = (center + Math.sin(northRadians) * radius) + "px";
-        target.style.top = (center - Math.cos(northRadians) * radius) + "px";
+function updateCameraOverlay() {
+    if (!isCameraActive || latitude === null || longitude === null || waypoints.length === 0 || isSucking) return;
+
+    const currentTarget = waypoints[currentIndex];
+    const distance = calculateDistance(latitude, longitude, currentTarget.lat, currentTarget.lon);
+    const distRounded = Math.round(distance);
+
+    targetAngleRelative = normalize(targetBearing - heading);
+    cameraArrow.style.transform = `rotate(${targetAngleRelative}deg)`;
+    cameraDistText.textContent = distRounded + " m";
+
+    arObject.textContent = currentTarget.icon;
+
+    if (distance <= TARGET_RADIUS) {
+        cameraHeaderTitle.textContent = "🎯 JETZT EINSAUGEN!";
+        cameraHeaderTitle.style.color = "#00ff66";
+        arObject.style.opacity = "1";
+        arObject.style.fontSize = "90px";
+        
+        foundButton.disabled = false;
+        foundButton.style.background = "#00ff66";
+    } else {
+        foundButton.disabled = true;
+        
+        if (distance <= 30) {
+            cameraHeaderTitle.textContent = "📷 NÄHER HERANGEHEN!";
+            cameraHeaderTitle.style.color = "#ff6600";
+            arObject.style.opacity = "0.7";
+            arObject.style.fontSize = "65px";
+        } else {
+            cameraHeaderTitle.textContent = "📷 ZU WEIT ENTFERNT";
+            cameraHeaderTitle.style.color = "#ff6600";
+            arObject.style.opacity = "0.35";
+            arObject.style.fontSize = "45px";
+        }
     }
 }
 
-/* =====================================================
-   RADARSTRAHL
-===================================================== */
 function startRadar(){
     if(radarAnimation !== null){
         cancelAnimationFrame(radarAnimation);
@@ -326,44 +619,103 @@ function startRadar(){
     }
 
     function animate(){
-        sweepAngle += 1.6;
+        sweepAngle += 2.08;
         if(sweepAngle >= 360) sweepAngle = 0;
 
         sweep.style.transform = "rotate(" + sweepAngle + "deg)";
         sweepGlow.style.transform = "rotate(" + sweepAngle + "deg)";
+
+        let angleDiff = Math.abs(sweepAngle - targetAngleRelative);
+        if (angleDiff > 180) angleDiff = 360 - angleDiff;
+
+        if (angleDiff < 12) {
+            target.style.opacity = "1";
+            if (!hasPinged) {
+                playSonarPing();
+                hasPinged = true;
+            }
+        } else {
+            target.style.opacity = "0";
+            if (angleDiff > 30) hasPinged = false;
+        }
 
         radarAnimation = requestAnimationFrame(animate);
     }
     animate();
 }
 
-/* =====================================================
-   KAMERA ÖFFNEN
-===================================================== */
-cameraButton.addEventListener("click", openCamera);
+cameraToggleButton.addEventListener("click", toggleCamera);
+cameraOffButton.addEventListener("click", toggleCamera);
 
-async function openCamera(){
-    try{
-        cameraStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: { ideal: "environment" } },
-            audio: false
-        });
-        camera.srcObject = cameraStream;
-        gameScreen.style.display = "none";
-        cameraScreen.style.display = "flex";
-    } catch(error){
-        showError("Die Kamera konnte nicht geöffnet werden.");
+async function toggleCamera(){
+    if (!isCameraActive) {
+        try {
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { exact: "environment" } },
+                    audio: false
+                });
+            } catch (err) {
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "environment" },
+                    audio: false
+                });
+            }
+            
+            camera.srcObject = cameraStream;
+            isCameraActive = true;
+            
+            gameScreen.style.display = "none";
+            cameraScreen.style.display = "flex";
+            updateCameraOverlay();
+        } catch(error) {
+            alert("Kamera-Fehler: " + error.message + "\nBitte Kamera-Berechtigung erteilen.");
+        }
+    } else {
+        stopCamera();
+        isCameraActive = false;
+        cameraScreen.style.display = "none";
+        gameScreen.style.display = "flex";
     }
 }
 
-/* =====================================================
-   ZIEL GEFUNDEN
-===================================================== */
 foundButton.addEventListener("click", function(){
-    stopCamera();
-    cameraScreen.style.display = "none";
-    success.style.display = "flex";
+    if (isSucking || foundButton.disabled) return;
+    
+    isSucking = true;
+    foundButton.disabled = true;
+    
+    playVacuumSound();
+    arObject.classList.add("sucking");
+
+    setTimeout(() => {
+        arObject.classList.remove("sucking");
+        isSucking = false;
+        advanceToNextStation();
+    }, 1200);
 });
+
+function advanceToNextStation() {
+    currentIndex++;
+    
+    if (currentIndex >= TOTAL_STATIONS) {
+        if (escapeTimerInterval) clearInterval(escapeTimerInterval);
+        stopCamera();
+        isCameraActive = false;
+        cameraScreen.style.display = "none";
+        gameScreen.style.display = "none";
+        success.style.display = "flex";
+    } else {
+        startEscapeTimer();
+        if (isCameraActive) {
+            stopCamera();
+            isCameraActive = false;
+            cameraScreen.style.display = "none";
+            gameScreen.style.display = "flex";
+        }
+        updateGame();
+    }
+}
 
 function stopCamera(){
     if(cameraStream){
@@ -373,24 +725,18 @@ function stopCamera(){
     }
 }
 
-/* =====================================================
-   NEUSTART
-===================================================== */
 againButton.addEventListener("click", function(){
     success.style.display = "none";
+    waypoints = [];
+    if (latitude !== null && longitude !== null) {
+        generateTestWaypoints(latitude, longitude);
+    }
     gameScreen.style.display = "flex";
-    cameraButton.style.display = "none";
-
-    TARGET_LAT = null;
-    TARGET_LON = null;
-
-    startGPS();
     startRadar();
+    startEscapeTimer();
+    updateGame();
 });
 
-/* =====================================================
-   MATHE-HILFSFUNKTIONEN
-===================================================== */
 function calculateDistance(lat1, lon1, lat2, lon2){
     const R = 6371000;
     const p1 = lat1 * Math.PI / 180;
@@ -418,16 +764,6 @@ function normalize(value){
     value = value % 360;
     if(value < 0) value += 360;
     return value;
-}
-
-function showError(message){
-    errorBox.textContent = message;
-    errorBox.style.display = "block";
-}
-
-function hideError(){
-    errorBox.textContent = "";
-    errorBox.style.display = "none";
 }
 </script>
 
