@@ -2,2213 +2,1404 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>DROHNENJAGD AR – Blankenhagen Spieleentwicklung</title>
-<style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#05070a;color:#fff;font-family:Arial,Helvetica,sans-serif;}
-body{touch-action:none;}
-#app{position:relative;width:100%;height:100%;max-width:480px;margin:auto;overflow:hidden;background:#05070a;}
-#cameraVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#05070a;z-index:1;}
-#cameraVideo.hidden{display:none;}
-#arCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none;}
-#hud{position:absolute;inset:0;z-index:10;pointer-events:none;}
-.topbar{position:absolute;top:env(safe-area-inset-top,10px);left:10px;right:10px;padding-top:8px;display:flex;justify-content:space-between;align-items:flex-start;}
-.brand{font-size:15px;font-weight:900;letter-spacing:1px;text-shadow:0 0 10px #000;}
-.mode{margin-top:2px;font-size:8px;color:#67e8f9;letter-spacing:.5px;}
-.publisher{font-size:8px;color:#ffb020;letter-spacing:.5px;margin-top:1px;font-weight:bold;}
-.stats{display:flex;gap:6px;}
-.stat{min-width:65px;padding:5px 7px;border:1px solid rgba(255,255,255,.25);border-radius:7px;background:rgba(0,0,0,.45);text-align:center;backdrop-filter:blur(4px);}
-.stat span{display:block;font-size:8px;color:#aaa;}
-.stat strong{font-size:14px;}
-#status{position:absolute;top:82px;left:50%;transform:translateX(-50%);min-width:210px;padding:7px 13px;border:1px solid #26f7c5;border-radius:20px;background:rgba(0,0,0,.58);text-align:center;font-size:11px;font-weight:bold;color:#26f7c5;letter-spacing:.5px;box-shadow:0 0 15px rgba(38,247,197,.2);}
-.status.warning{color:#ffb020;border-color:#ffb020;}
-.status.danger{color:#ff3048;border-color:#ff3048;}
-#directionGuide{position:absolute;top:122px;left:50%;transform:translateX(-50%);width:240px;text-align:center;}
-#directionArrow{font-size:40px;line-height:38px;font-weight:bold;text-shadow:0 0 15px currentColor;}
-#directionText{margin-top:2px;font-size:11px;font-weight:bold;letter-spacing:1px;}
-#directionDeg{margin-top:2px;font-size:9px;color:#aaa;}
-#jetReticle{position:absolute;left:50%;top:43%;width:150px;height:150px;transform:translate(-50%,-50%);}
-.reticle-circle{position:absolute;inset:25px;border:2px solid rgba(0,255,220,.8);border-radius:50%;box-shadow:0 0 12px rgba(0,255,220,.5),inset 0 0 12px rgba(0,255,220,.15);}
-.reticle-circle:before,.reticle-circle:after{content:"";position:absolute;background:#00ffdc;}
-.reticle-circle:before{width:2px;height:28px;left:50%;top:-16px;}
-.reticle-circle:after{height:2px;width:28px;top:50%;left:-16px;}
-.reticle-wing{position:absolute;top:50%;width:42px;height:2px;background:#00ffdc;box-shadow:0 0 8px #00ffdc;}
-.reticle-wing.left{left:0;}
-.reticle-wing.right{right:0;}
-.reticle-wing:after{content:"";position:absolute;width:12px;height:2px;background:#00ffdc;}
-.reticle-wing.left:after{right:0;transform:rotate(-25deg);transform-origin:right;}
-.reticle-wing.right:after{left:0;transform:rotate(25deg);transform-origin:left;}
-.reticle-bottom{position:absolute;left:50%;bottom:0;width:2px;height:30px;background:#00ffdc;transform:translateX(-50%);box-shadow:0 0 8px #00ffdc;}
-.reticle-dot{position:absolute;left:50%;top:50%;width:5px;height:5px;background:#fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 10px #fff;}
-#lockLabel{position:absolute;top:calc(43% + 83px);left:50%;transform:translateX(-50%);padding:4px 10px;border:1px solid #00ffdc;border-radius:4px;background:rgba(0,0,0,.5);color:#00ffdc;font-size:10px;font-weight:bold;letter-spacing:2px;white-space:nowrap;}
-#targetBox{position:absolute;width:80px;height:60px;border:1px solid #ff3048;display:none;pointer-events:none;}
-#targetBox:before,#targetBox:after{content:"";position:absolute;width:12px;height:12px;border-color:#ff3048;}
-#targetBox:before{left:-1px;top:-1px;border-left:3px solid;border-top:3px solid;}
-#targetBox:after{right:-1px;bottom:-1px;border-right:3px solid;border-bottom:3px solid;}
-#targetInfo{position:absolute;display:none;padding:5px 8px;border:1px solid rgba(255,255,255,.35);border-radius:5px;background:rgba(0,0,0,.65);font-size:9px;color:#fff;}
-#droneType{position:absolute;top:calc(43% + 105px);left:50%;transform:translateX(-50%);padding:4px 8px;border:1px solid #fff;border-radius:4px;background:rgba(0,0,0,.5);font-size:9px;font-weight:bold;display:none;}
-#radar{position:absolute;right:12px;bottom:115px;width:105px;height:105px;border:1px solid rgba(0,255,220,.5);border-radius:50%;background:radial-gradient(circle,transparent 0 28%,rgba(0,255,220,.08) 29% 30%,transparent 31% 48%,rgba(0,255,220,.08) 49% 50%,transparent 51% 68%,rgba(0,255,220,.08) 69% 70%,transparent 71%);overflow:hidden;}
-#radar:before,#radar:after{content:"";position:absolute;background:rgba(0,255,220,.25);}
-#radar:before{left:50%;top:0;width:1px;height:100%;}
-#radar:after{top:50%;left:0;width:100%;height:1px;}
-#radarSweep{position:absolute;left:50%;top:50%;width:50%;height:1px;background:#00ffdc;transform-origin:left center;box-shadow:0 0 8px #00ffdc;}
-#radarDot{position:absolute;width:7px;height:7px;border-radius:50%;background:#ff3048;box-shadow:0 0 10px #ff3048;display:none;}
-#radar.hidden{display:none;}
-#micPanel{position:absolute;left:12px;bottom:115px;width:130px;padding:8px;border:1px solid rgba(255,255,255,.25);border-radius:7px;background:rgba(0,0,0,.5);}
-#micTitle{font-size:8px;color:#aaa;margin-bottom:5px;}
-#micBar{height:6px;width:100%;border-radius:5px;background:#222;overflow:hidden;}
-#micLevel{width:0%;height:100%;background:#26f7c5;transition:width .08s;}
-#micStatus{margin-top:4px;font-size:8px;color:#26f7c5;}
-.bottom{position:absolute;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;pointer-events:auto;}
-button{border:1px solid #26f7c5;background:rgba(0,0,0,.75);color:#26f7c5;border-radius:8px;min-height:48px;font-size:11px;font-weight:bold;letter-spacing:.5px;cursor:pointer;}
-button:active{transform:scale(.97);}
-#startBtn{flex:1;}
-#fireBtn{flex:1;border-color:#ff3048;color:#ff3048;}
-#cameraBtn,#radarBtn{flex:.65;}
-#startOverlay{position:absolute;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:25px;background:radial-gradient(circle at center,rgba(0,255,220,.08),rgba(0,0,0,.94) 65%);}
-.startBox{width:100%;max-width:360px;padding:25px;border:1px solid rgba(0,255,220,.5);border-radius:14px;background:rgba(5,10,13,.92);text-align:center;box-shadow:0 0 35px rgba(0,255,220,.12);}
-.startLogo{font-size:27px;font-weight:900;}
-.startSub{margin-top:4px;color:#ffb020;font-size:9px;font-weight:bold;letter-spacing:1.5px;}
-.startStudio{margin-top:2px;color:#26f7c5;font-size:10px;letter-spacing:1px;}
-.startInfo{margin:18px 0;color:#aaa;font-size:11px;line-height:1.6;}
-#startGame{width:100%;min-height:52px;border-color:#26f7c5;background:rgba(0,255,220,.08);}
-.pcHint{margin-top:10px;font-size:9px;color:#777;}
-.ai-notice{margin-top:12px;font-size:8px;color:#555;border-top:1px solid rgba(255,255,255,.1);padding-top:8px;}
 
-/* IMPRESSUM – nur auf der Startseite */
-#impressumBtn{
-    width:100%;
-    min-height:44px;
-    margin-top:10px;
-    border-color:#26f7c5;
-    color:#26f7c5;
-    background:rgba(0,255,220,.04);
+<meta name="viewport"
+      content="width=device-width,
+      initial-scale=1.0,
+      maximum-scale=1.0,
+      user-scalable=no,
+      viewport-fit=cover">
+
+<title>GPS JAGD – Blankenhagen Spieleentwicklung</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
 }
-#impressumModal{
-    position:absolute;
+
+html,body{
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#030709;
+    color:#fff;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+    min-height:100dvh;
+}
+
+button{
+    border:0;
+    border-radius:14px;
+    padding:16px 20px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+/* =====================================================
+   START
+===================================================== */
+
+#startScreen{
+    position:fixed;
     inset:0;
-    z-index:50;
-    display:none;
+    z-index:100;
+    display:flex;
     align-items:center;
     justify-content:center;
-    padding:20px;
-    background:rgba(0,0,0,.88);
+    padding:22px;
+    background:
+        radial-gradient(circle at center,
+        #17363a 0%,
+        #081315 45%,
+        #020405 100%);
 }
-.impressumBox{
-    width:100%;
-    max-width:630px;
-    max-height:90vh;
-    overflow:auto;
-    padding:28px 32px;
-    border:2px solid #00ff66;
-    border-radius:14px;
-    background:#102a18;
-    color:#d8e4da;
-    box-shadow:0 0 30px rgba(0,255,102,.18);
+
+.startBox{
+    width:min(450px,100%);
+    padding:30px 22px;
+    text-align:center;
+    border:1px solid rgba(0,255,180,.2);
+    border-radius:24px;
+    background:rgba(5,13,15,.94);
+    box-shadow:
+        0 20px 60px rgba(0,0,0,.6);
 }
-.impressumBox h2{
-    margin:0 0 12px;
-    color:#00ff66;
-    font-size:21px;
+
+.brand{
+    font-size:12px;
+    letter-spacing:3px;
+    color:#75918f;
+    margin-bottom:18px;
 }
-.impressumBox h3{
-    margin:18px 0 6px;
-    padding-bottom:5px;
-    border-bottom:1px solid rgba(0,255,102,.3);
-    color:#00ff66;
-    font-size:18px;
-}
-.impressumBox p{
+
+h1{
     margin:0;
-    font-size:14px;
-    line-height:1.6;
+    font-size:34px;
+    letter-spacing:2px;
 }
-.impressumBox strong{color:#d8e4da;}
-#closeImpressum{
-    display:block;
-    margin:26px auto 0;
-    min-width:150px;
-    background:#fff;
-    color:#1b2b20;
-    border-color:#fff;
+
+.subtitle{
+    margin:10px 0 24px;
+    color:#9db4b2;
+    line-height:1.5;
+}
+
+.startInfo{
+    padding:14px;
+    margin-bottom:20px;
+    border-radius:12px;
+    background:rgba(0,255,180,.05);
+    color:#a9c1be;
     font-size:14px;
+    line-height:1.5;
+}
+
+#startButton{
+    width:100%;
+    background:#16d995;
+    color:#03110d;
+}
+
+#errorBox{
+    display:none;
+    margin-top:15px;
+    padding:13px;
+    border-radius:12px;
+    background:rgba(255,60,60,.12);
+    border:1px solid rgba(255,70,70,.3);
+    color:#ffb4b4;
+    font-size:14px;
+    line-height:1.5;
+    white-space:pre-line;
+}
+
+/* =====================================================
+   SPIEL
+===================================================== */
+
+#gameScreen{
+    position:fixed;
+    inset:0;
+    display:none;
+    flex-direction:column;
+    background:#020708;
+}
+
+.topBar{
+    flex:none;
+    padding:
+        calc(12px + env(safe-area-inset-top))
+        15px
+        12px;
+    text-align:center;
+    background:rgba(2,8,9,.96);
+    border-bottom:1px solid rgba(0,255,170,.12);
+}
+
+.title{
+    font-size:12px;
+    letter-spacing:3px;
+    color:#65817e;
+}
+
+#status{
+    margin-top:5px;
+    font-size:17px;
+    font-weight:bold;
+}
+
+/* =====================================================
+   RADAR
+===================================================== */
+
+.radarArea{
+    position:relative;
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:0;
+    overflow:hidden;
+}
+
+#radar{
+    position:relative;
+    width:min(88vw,430px);
+    height:min(88vw,430px);
+    max-width:60vh;
+    max-height:60vh;
+    aspect-ratio:1;
+    border-radius:50%;
+    border:2px solid rgba(0,255,170,.5);
+    background:
+        radial-gradient(
+            circle,
+            transparent 0 15%,
+            rgba(0,255,170,.13) 15.3% 15.6%,
+            transparent 16% 31%,
+            rgba(0,255,170,.13) 31.3% 31.6%,
+            transparent 32% 47%,
+            rgba(0,255,170,.13) 47.3% 47.6%,
+            transparent 48% 63%,
+            rgba(0,255,170,.13) 63.3% 63.6%,
+            transparent 64% 79%,
+            rgba(0,255,170,.13) 79.3% 79.6%,
+            transparent 80%
+        );
+    box-shadow:
+        0 0 30px rgba(0,255,170,.15),
+        inset 0 0 40px rgba(0,255,170,.08);
+    overflow:hidden;
+}
+
+#radar::before{
+    content:"";
+    position:absolute;
+    left:0;
+    right:0;
+    top:50%;
+    height:1px;
+    background:rgba(0,255,170,.18);
+}
+
+#radar::after{
+    content:"";
+    position:absolute;
+    top:0;
+    bottom:0;
+    left:50%;
+    width:1px;
+    background:rgba(0,255,170,.18);
+}
+
+.north{
+    position:absolute;
+    top:8px;
+    left:50%;
+    transform:translateX(-50%);
+    color:#76aaa2;
+    font-size:11px;
+    font-weight:bold;
+    z-index:20;
+}
+
+#sweep{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:50%;
+    height:2px;
+    transform-origin:0 50%;
+    background:
+        linear-gradient(
+            90deg,
+            rgba(0,255,170,1),
+            rgba(0,255,170,.2),
+            transparent
+        );
+    box-shadow:0 0 9px rgba(0,255,170,.8);
+    z-index:5;
+}
+
+#sweepGlow{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:50%;
+    height:50%;
+    transform-origin:0 0;
+    clip-path:
+        polygon(
+            0 50%,
+            100% 0,
+            100% 100%
+        );
+    background:
+        rgba(0,255,170,.07);
+    z-index:4;
+}
+
+.player{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:14px;
+    height:14px;
+    margin:-7px;
+    border-radius:50%;
+    background:white;
+    box-shadow:
+        0 0 8px white,
+        0 0 18px rgba(0,255,180,.9);
+    z-index:15;
+}
+
+#target{
+    position:absolute;
+    width:18px;
+    height:18px;
+    margin:-9px;
+    border-radius:50%;
+    background:#ff3535;
+    box-shadow:
+        0 0 8px #ff3535,
+        0 0 20px rgba(255,50,50,.8);
+    z-index:14;
+    transition:
+        left .35s ease,
+        top .35s ease;
+}
+
+#target::after{
+    content:"ZIEL";
+    position:absolute;
+    top:21px;
+    left:50%;
+    transform:translateX(-50%);
+    color:#ff6b6b;
+    font-size:9px;
+    font-weight:bold;
+}
+
+/* =====================================================
+   UNTEN
+===================================================== */
+
+.bottom{
+    flex:none;
+    padding:
+        12px 15px
+        calc(15px + env(safe-area-inset-bottom));
+    background:rgba(2,8,9,.97);
+    border-top:1px solid rgba(0,255,170,.12);
+    text-align:center;
+}
+
+.distanceLine{
+    display:flex;
+    align-items:baseline;
+    justify-content:center;
+    gap:7px;
+}
+
+#distance{
+    font-size:44px;
+    font-weight:bold;
+}
+
+.meter{
+    color:#76918e;
+}
+
+#accuracy{
+    margin-top:4px;
+    color:#607875;
+    font-size:12px;
+}
+
+#bearing{
+    margin-top:5px;
+    color:#8aaaa7;
+    font-size:13px;
+}
+
+#cameraButton{
+    display:none;
+    width:100%;
+    margin-top:12px;
+    background:#ffb52c;
+    color:#171006;
+}
+
+/* =====================================================
+   KAMERA
+===================================================== */
+
+#cameraScreen{
+    position:fixed;
+    inset:0;
+    display:none;
+    background:#000;
+    z-index:200;
+}
+
+#camera{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.cameraHud{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+}
+
+.cameraTitle{
+    position:absolute;
+    top:calc(15px + env(safe-area-inset-top));
+    left:15px;
+    padding:10px 14px;
+    border-radius:10px;
+    background:rgba(0,0,0,.65);
+    font-weight:bold;
+}
+
+.crosshair{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:110px;
+    height:110px;
+    transform:translate(-50%,-50%);
+    border:2px solid rgba(255,255,255,.85);
+    border-radius:50%;
+}
+
+.crosshair::before{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:-18px;
+    width:2px;
+    height:146px;
+    transform:translateX(-50%);
+    background:rgba(255,255,255,.7);
+}
+
+.crosshair::after{
+    content:"";
+    position:absolute;
+    top:50%;
+    left:-18px;
+    width:146px;
+    height:2px;
+    transform:translateY(-50%);
+    background:rgba(255,255,255,.7);
+}
+
+.cameraMessage{
+    position:absolute;
+    left:20px;
+    right:20px;
+    bottom:130px;
+    padding:15px;
+    border-radius:14px;
+    background:rgba(0,0,0,.7);
+    text-align:center;
+    font-size:17px;
+}
+
+.cameraBottom{
+    position:absolute;
+    left:20px;
+    right:20px;
+    bottom:
+        calc(18px + env(safe-area-inset-bottom));
+}
+
+#foundButton{
+    width:100%;
+    pointer-events:auto;
+    background:#19d995;
+    color:#03110d;
+}
+
+/* =====================================================
+   ERFOLG
+===================================================== */
+
+#success{
+    position:fixed;
+    inset:0;
+    display:none;
+    z-index:300;
+    align-items:center;
+    justify-content:center;
+    padding:25px;
+    text-align:center;
+    background:#06100d;
+}
+
+.successBox{
+    width:min(430px,100%);
+}
+
+.successIcon{
+    font-size:80px;
+}
+
+.successBox h2{
+    font-size:34px;
+}
+
+.successBox p{
+    color:#a7beb9;
+}
+
+#again{
+    width:100%;
+    margin-top:20px;
+    background:#fff;
+    color:#111;
 }
 </style>
 </head>
 
 <body>
 
-<div id="app">
+<!-- =====================================================
+     START
+===================================================== -->
 
-    <video id="cameraVideo" autoplay playsinline muted></video>
-    <canvas id="arCanvas"></canvas>
+<section id="startScreen">
 
-    <div id="hud">
+    <div class="startBox">
 
-        <div class="topbar">
-
-            <div>
-                <div class="brand">🚁 DROHNENJAGD</div>
-                <div class="publisher">BLANKENHAGEN SPIELEENTWICKLUNG</div>
-                <div id="mode" class="mode">AR-KAMERA PROTOTYP</div>
-            </div>
-
-            <div class="stats">
-                <div class="stat">
-                    <span>SCORE</span>
-                    <strong id="score">0</strong>
-                </div>
-
-                <div class="stat">
-                    <span>LEVEL</span>
-                    <strong id="level">1</strong>
-                </div>
-
-                <div class="stat">
-                    <span>BEST</span>
-                    <strong id="highscore">0</strong>
-                </div>
-            </div>
-
+        <div class="brand">
+            BLANKENHAGEN SPIELEENTWICKLUNG
         </div>
 
-        <div id="status" class="status">SYSTEM BEREIT</div>
+        <h1>GPS JAGD</h1>
 
-        <div id="directionGuide">
-            <div id="directionArrow">↑</div>
-            <div id="directionText">ZIEL SUCHEN</div>
-            <div id="directionDeg">0°</div>
+        <div class="subtitle">
+            Finde das versteckte Ziel
         </div>
 
-        <div id="jetReticle">
-            <div class="reticle-circle"></div>
-            <div class="reticle-wing left"></div>
-            <div class="reticle-wing right"></div>
-            <div class="reticle-bottom"></div>
-            <div class="reticle-dot"></div>
+        <div class="startInfo">
+            Für das Spiel werden
+            <strong>Standort</strong>,
+            <strong>Kamera</strong> und – wenn verfügbar –
+            die <strong>Kompass-/Ausrichtungsdaten</strong>
+            benötigt.
+            <br><br>
+            Dein Standort wird nur für die aktuelle
+            Spielsitzung verwendet.
         </div>
 
-        <div id="lockLabel">TARGET SEARCH</div>
-        <div id="targetBox"></div>
-        <div id="targetInfo"></div>
-        <div id="droneType"></div>
+        <button id="startButton">
+            SPIEL STARTEN
+        </button>
+
+        <div id="errorBox"></div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     SPIEL
+===================================================== -->
+
+<section id="gameScreen">
+
+    <div class="topBar">
+
+        <div class="title">
+            GPS-SCHNITZELJAGD
+        </div>
+
+        <div id="status">
+            GPS wird gesucht ...
+        </div>
+
+    </div>
+
+
+    <div class="radarArea">
 
         <div id="radar">
-            <div id="radarSweep"></div>
-            <div id="radarDot"></div>
-        </div>
 
-        <div id="micPanel">
-            <div id="micTitle">AKUSTISCHE ORTUNG</div>
-            <div id="micBar">
-                <div id="micLevel"></div>
-            </div>
-            <div id="micStatus">MIKROFON BEREIT</div>
-        </div>
+            <div class="north">N</div>
 
-        <div class="bottom">
-            <button id="cameraBtn">📷 KAMERA</button>
-            <button id="radarBtn">◉ RADAR</button>
-            <button id="startBtn">SYSTEM START</button>
-            <button id="fireBtn">🎯 ABFANGEN</button>
-        </div>
+            <div id="sweepGlow"></div>
 
-    </div>
+            <div id="sweep"></div>
 
-    <div id="startOverlay">
+            <div class="player"></div>
 
-        <div class="startBox">
-
-            <div class="startLogo">🚁 DROHNENJAGD</div>
-
-            <div class="startSub">
-                AR INTERCEPTOR PROTOTYP
-            </div>
-
-            <div class="startStudio">
-                BLANKENHAGEN SPIELEENTWICKLUNG
-            </div>
-
-            <div class="startInfo">
-                Suche die virtuelle Drohne im Raum.<br>
-                Richte das Visier exakt auf das Ziel aus.
-                <br><br>
-                <strong style="color:#26f7c5;">
-                    TARGET LOCK = ABFANGEN
-                </strong>
-            </div>
-
-            <button id="startGame">
-                ▶ PROTOTYP STARTEN
-            </button>
-
-            <div class="pcHint">
-                PC-TEST: Maus bewegen oder ← → zum Drehen
-            </div>
-
-            <div class="ai-notice">
-                Dieser Text/Dieses Bild/Dieses Video/… wurde unter Zuhilfenahme einer Künstlichen Intelligenz erstellt und von einem Menschen überprüft.
-            </div>
-
-            <!-- NUR AUF DER STARTSEITE -->
-            <button id="impressumBtn">
-                ℹ IMPRESSUM
-            </button>
-
-            <div id="impressumModal">
-
-                <div class="impressumBox">
-
-                    <h2>Impressum</h2>
-
-                    <h3>1. Haftungsausschluss</h3>
-
-                    <p>
-                        Die Nutzung erfolgt auf eigene Verantwortung.
-                        Bitte auf Umgebung und Verkehr achten.
-                    </p>
-
-                    <h3>2. Datenschutz</h3>
-
-                    <p>
-                        Diese WebApp speichert keine personenbezogenen Daten.<br>
-                        Standortdaten werden nicht dauerhaft gespeichert.
-                    </p>
-
-                    <h3>3. Nutzungsbedingungen</h3>
-
-                    <p>
-                        Das Spiel dient der Unterhaltung.
-                        Keine Garantie auf Sensor- oder GPS-Genauigkeit.
-                        Nutzung auf eigene Gefahr.
-                    </p>
-
-                    <h3>4. Impressum</h3>
-
-                    <p>
-                        <strong>Blankenhagen Spieleentwicklung</strong><br>
-                        73614 Schorndorf<br>
-                        E-Mail: spieleentwicklung@freenet.de
-                    </p>
-
-                    <h3>Hinweis für Veranstalter</h3>
-
-                    <p>
-                        Der Veranstalter (z. B. Verein) ist verantwortlich
-                        für die sichere Durchführung des Spiels.
-                    </p>
-
-                    <button id="closeImpressum">
-                        Schließen
-                    </button>
-
-                </div>
-
-            </div>
+            <div id="target"></div>
 
         </div>
 
     </div>
 
-</div>
+
+    <div class="bottom">
+
+        <div class="distanceLine">
+
+            <span id="distance">---</span>
+
+            <span class="meter">m</span>
+
+        </div>
+
+        <div id="accuracy">
+            GPS-Genauigkeit: ---
+        </div>
+
+        <div id="bearing">
+            Zielrichtung: ---
+        </div>
+
+        <button id="cameraButton">
+            📷 KAMERA FREIGESCHALTET
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     KAMERA
+===================================================== -->
+
+<section id="cameraScreen">
+
+    <video id="camera"
+           autoplay
+           playsinline
+           muted></video>
+
+    <div class="cameraHud">
+
+        <div class="cameraTitle">
+            📷 ZIELSUCHE
+        </div>
+
+        <div class="crosshair"></div>
+
+        <div class="cameraMessage">
+            🎯 <strong>ZIELBEREICH ERREICHT</strong><br>
+            Suche jetzt den Hinweis.
+        </div>
+
+        <div class="cameraBottom">
+
+            <button id="foundButton">
+                ✅ ZIEL GEFUNDEN
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     ERFOLG
+===================================================== -->
+
+<section id="success">
+
+    <div class="successBox">
+
+        <div class="successIcon">
+            🎯
+        </div>
+
+        <h2>ZIEL GEFUNDEN!</h2>
+
+        <p>
+            Die erste Station wurde erfolgreich gefunden.
+        </p>
+
+        <button id="again">
+            NOCH EINMAL
+        </button>
+
+    </div>
+
+</section>
+
 
 <script>
 
-const canvas = document.getElementById("arCanvas");
-const ctx = canvas.getContext("2d");
+/* =====================================================
+   HIER NUR DIE TEST-KOORDINATEN ÄNDERN
+===================================================== */
 
-const video = document.getElementById("cameraVideo");
-
-const scoreEl = document.getElementById("score");
-const levelEl = document.getElementById("level");
-const highscoreEl = document.getElementById("highscore");
-
-const status = document.getElementById("status");
-
-const directionArrow = document.getElementById("directionArrow");
-const directionText = document.getElementById("directionText");
-const directionDeg = document.getElementById("directionDeg");
-
-const lockLabel = document.getElementById("lockLabel");
-
-const targetBox = document.getElementById("targetBox");
-const targetInfo = document.getElementById("targetInfo");
-const droneType = document.getElementById("droneType");
-
-const radarDot = document.getElementById("radarDot");
-const radarSweep = document.getElementById("radarSweep");
-
-const micLevel = document.getElementById("micLevel");
-const micStatus = document.getElementById("micStatus");
-
-const startBtn = document.getElementById("startBtn");
-const fireBtn = document.getElementById("fireBtn");
-
-const startOverlay = document.getElementById("startOverlay");
-
-const impressumBtn = document.getElementById("impressumBtn");
-const impressumModal = document.getElementById("impressumModal");
-const closeImpressum = document.getElementById("closeImpressum");
+const TARGET_LAT = 48.710123;
+const TARGET_LON = 9.412345;
 
 
-let W = 0;
-let H = 0;
-let dpr = window.devicePixelRatio || 1;
+/* =====================================================
+   SPIEL-EINSTELLUNGEN
+===================================================== */
+
+const TARGET_RADIUS = 20;
+
+const RADAR_RANGE = 500;
 
 
-function resize(){
+/* =====================================================
+   VARIABLEN
+===================================================== */
 
-    W = window.innerWidth;
-    H = window.innerHeight;
+let gpsWatch = null;
 
-    canvas.width = W * dpr;
-    canvas.height = H * dpr;
+let latitude = null;
+let longitude = null;
+let accuracy = null;
 
-    ctx.scale(dpr, dpr);
-}
+let targetBearing = 0;
+let heading = 0;
 
-
-window.addEventListener("resize", resize);
-
-resize();
-
-
-const isDesktop =
-    window.matchMedia("(pointer:fine)").matches &&
-    !("ontouchstart" in window);
-
-let desktopTestMode = isDesktop;
-
-let lastPointerX = null;
-
-
-let running = false;
-
-let score = 0;
-
-let level = 1;
-
-let highscore =
-    parseInt(
-        localStorage.getItem(
-            "blankenhagen_drohnenjagd_highscore"
-        ) || "0"
-    );
-
-highscoreEl.innerText = highscore;
-
-
-let currentHeading = 0;
-let smoothHeading = 0;
-
-let drone = null;
-
-let gameTimer = null;
-let spawnTimer = null;
-
-let lastSpawn = 0;
+let orientationAvailable = false;
 
 let cameraStream = null;
 
-
-let audioContext = null;
-let analyser = null;
-let microphone = null;
-let audioData = null;
-
-let droneAudio = null;
-let droneGain = null;
-let dronePanner = null;
-
-let radarAngle = 0;
+let sweepAngle = 0;
+let radarAnimation = null;
 
 
-const DRONE_TYPES = [
+/* =====================================================
+   ELEMENTE
+===================================================== */
 
-    {
-        id:"scout",
-        label:"SCOUT",
-        color:"#26f7c5",
-        points:100,
-        speed:.045,
-        minDistance:28,
-        maxDistance:55,
-        audioBase:430,
-        minLevel:1
-    },
+const startScreen =
+    document.getElementById("startScreen");
 
-    {
-        id:"quadcopter",
-        label:"QUADCOPTER",
-        color:"#ffb020",
-        points:150,
-        speed:.032,
-        minDistance:32,
-        maxDistance:62,
-        audioBase:310,
-        minLevel:1
-    },
+const gameScreen =
+    document.getElementById("gameScreen");
 
-    {
-        id:"heavy",
-        label:"HEAVY",
-        color:"#ff3048",
-        points:250,
-        speed:.021,
-        minDistance:40,
-        maxDistance:70,
-        audioBase:180,
-        minLevel:2
-    },
+const cameraScreen =
+    document.getElementById("cameraScreen");
 
-    {
-        id:"stealth",
-        label:"STEALTH",
-        color:"#b46cff",
-        points:400,
-        speed:.027,
-        minDistance:25,
-        maxDistance:60,
-        audioBase:620,
-        minLevel:3
+const success =
+    document.getElementById("success");
+
+const startButton =
+    document.getElementById("startButton");
+
+const cameraButton =
+    document.getElementById("cameraButton");
+
+const foundButton =
+    document.getElementById("foundButton");
+
+const againButton =
+    document.getElementById("again");
+
+const errorBox =
+    document.getElementById("errorBox");
+
+const status =
+    document.getElementById("status");
+
+const distanceOutput =
+    document.getElementById("distance");
+
+const accuracyOutput =
+    document.getElementById("accuracy");
+
+const bearingOutput =
+    document.getElementById("bearing");
+
+const target =
+    document.getElementById("target");
+
+const radar =
+    document.getElementById("radar");
+
+const sweep =
+    document.getElementById("sweep");
+
+const sweepGlow =
+    document.getElementById("sweepGlow");
+
+const camera =
+    document.getElementById("camera");
+
+
+/* =====================================================
+   START
+===================================================== */
+
+startButton.addEventListener(
+    "click",
+    startGame
+);
+
+
+async function startGame(){
+
+    hideError();
+
+    startButton.disabled = true;
+
+    startButton.textContent =
+        "STANDORT WIRD FREIGEGEBEN ...";
+
+
+    /*
+       Kompassberechtigung möglichst direkt
+       aus dem Benutzerklick heraus anfordern.
+    */
+
+    await askForOrientation();
+
+
+    /*
+       1. Standortberechtigung
+    */
+
+    const gpsOK =
+        await askForGPS();
+
+    if(!gpsOK){
+
+        startButton.disabled = false;
+
+        startButton.textContent =
+            "STANDORT ERNEUT FREIGEBEN";
+
+        return;
     }
 
-];
+
+    /*
+       2. Kamera-Berechtigung
+    */
+
+    startButton.textContent =
+        "KAMERA WIRD FREIGEGEBEN ...";
+
+    const cameraOK =
+        await askForCamera();
+
+    if(!cameraOK){
+
+        startButton.disabled = false;
+
+        startButton.textContent =
+            "KAMERA ERNEUT FREIGEBEN";
+
+        return;
+    }
 
 
-function clamp(v,min,max){
+    /*
+       3. Spiel starten
+    */
 
-    return Math.max(
-        min,
-        Math.min(max,v)
-    );
+    startScreen.style.display =
+        "none";
 
+    gameScreen.style.display =
+        "flex";
+
+    startGPS();
+
+    startRadar();
 }
 
 
-function normalizeAngle(a){
+/* =====================================================
+   GPS-BERECHTIGUNG
+===================================================== */
 
-    while(a > 180)
-        a -= 360;
+function askForGPS(){
 
-    while(a < -180)
-        a += 360;
+    return new Promise(function(resolve){
 
-    return a;
+        if(!navigator.geolocation){
 
-}
+            showError(
+                "Dieses Gerät unterstützt keine Standortbestimmung."
+            );
 
+            resolve(false);
 
-function distanceText(d){
-
-    return Math.round(d) + " m";
-
-}
+            return;
+        }
 
 
-function randomDroneType(){
+        navigator.geolocation.getCurrentPosition(
 
-    const avail =
-        DRONE_TYPES.filter(
-            d => d.minLevel <= level
+            function(position){
+
+                latitude =
+                    position.coords.latitude;
+
+                longitude =
+                    position.coords.longitude;
+
+                accuracy =
+                    position.coords.accuracy;
+
+                resolve(true);
+            },
+
+
+            function(error){
+
+                if(error.code === 1){
+
+                    showError(
+                        "📍 Standortzugriff wurde verweigert.\n\n" +
+                        "Bitte erlaube dieser Website den Standortzugriff " +
+                        "in den Browser-Einstellungen."
+                    );
+                }
+
+                else if(error.code === 2){
+
+                    showError(
+                        "📍 Standort konnte nicht ermittelt werden.\n\n" +
+                        "Bitte GPS/Standort einschalten."
+                    );
+                }
+
+                else{
+
+                    showError(
+                        "📍 GPS-Suche hat zu lange gedauert.\n\n" +
+                        "Bitte erneut versuchen."
+                    );
+                }
+
+                resolve(false);
+            },
+
+
+            {
+                enableHighAccuracy:true,
+                timeout:15000,
+                maximumAge:0
+            }
+
         );
 
-    return avail[
-        Math.floor(
-            Math.random() * avail.length
-        )
-    ];
+    });
 
 }
 
 
-/* NEU: Levelabhängige maximale Abfangdistanz */
-function getInterceptRange(){
+/* =====================================================
+   KAMERA-BERECHTIGUNG
+===================================================== */
 
-    const ranges =
-        [
-            100,
-            80,
-            65,
-            50,
-            40,
-            30,
-            25,
-            20,
-            15,
-            10
-        ];
+async function askForCamera(){
 
-    return ranges[
-        Math.min(
-            level - 1,
-            ranges.length - 1
-        )
-    ];
+    if(
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+    ){
 
-}
+        showError(
+            "📷 Dieser Browser unterstützt keinen Kamerazugriff."
+        );
 
+        return false;
+    }
 
-async function initAudio(){
 
     try{
 
-        audioContext =
-            new (
-                window.AudioContext ||
-                window.webkitAudioContext
-            )();
-
-        analyser =
-            audioContext.createAnalyser();
-
-        analyser.fftSize = 512;
-
-        audioData =
-            new Uint8Array(
-                analyser.frequencyBinCount
-            );
-
         const stream =
             await navigator.mediaDevices.getUserMedia({
-                audio:true
+
+                video:{
+                    facingMode:{
+                        ideal:"environment"
+                    }
+                },
+
+                audio:false
+
             });
 
-        microphone =
-            audioContext.createMediaStreamSource(
-                stream
-            );
 
-        microphone.connect(analyser);
+        /*
+           Berechtigung wurde erteilt.
+           Kamera für den Moment wieder schließen.
+        */
 
-        micStatus.innerText =
-            "MIKROFON AKTIV";
-
-    }catch(e){
-
-        micStatus.innerText =
-            "MIKROFON NICHT VERFÜGBAR";
-
-    }
-
-}
-
-
-function analyseMicrophone(){
-
-    if(!analyser)
-        return;
-
-    analyser.getByteFrequencyData(
-        audioData
-    );
-
-    let sum = 0;
-
-    for(
-        let i=0;
-        i<audioData.length;
-        i++
-    ){
-
-        sum += audioData[i];
-
-    }
-
-    micLevel.style.width =
-        clamp(
-            (sum / audioData.length) / 100 * 100,
-            0,
-            100
-        ) + "%";
-
-}
-
-
-function startDroneAudio(){
-
-    if(!audioContext || !drone)
-        return;
-
-    stopDroneAudio();
-
-    droneAudio =
-        audioContext.createOscillator();
-
-    droneGain =
-        audioContext.createGain();
-
-    dronePanner =
-        audioContext.createStereoPanner();
-
-    droneAudio.type =
-        "sawtooth";
-
-    droneAudio.frequency.value =
-        drone.type.audioBase;
-
-    droneGain.gain.value =
-        .018;
-
-    droneAudio.connect(
-        droneGain
-    );
-
-    droneGain.connect(
-        dronePanner
-    );
-
-    dronePanner.connect(
-        audioContext.destination
-    );
-
-    droneAudio.start();
-
-}
-
-
-function updateDroneAudio(){
-
-    if(
-        !droneAudio ||
-        !drone ||
-        !dronePanner
-    )
-        return;
-
-    const rel =
-        normalizeAngle(
-            drone.bearing -
-            currentHeading
+        stream.getTracks().forEach(
+            function(track){
+                track.stop();
+            }
         );
 
-    dronePanner.pan.value =
-        clamp(
-            rel / 70,
-            -1,
-            1
+
+        return true;
+
+    }
+
+    catch(error){
+
+        showError(
+            "📷 Kamerazugriff wurde nicht erlaubt.\n\n" +
+            "Bitte erlaube der Website den Kamerazugriff."
         );
 
-    droneAudio.frequency.value =
-        drone.type.audioBase +
-        Math.sin(Date.now()/90) * 8;
-
-}
-
-
-function stopDroneAudio(){
-
-    if(droneAudio){
-
-        try{
-            droneAudio.stop();
-        }catch(e){}
-
-        droneAudio.disconnect();
-
-        droneAudio = null;
-
-    }
-
-    if(droneGain){
-
-        droneGain.disconnect();
-
-        droneGain = null;
-
-    }
-
-    if(dronePanner){
-
-        dronePanner.disconnect();
-
-        dronePanner = null;
-
+        return false;
     }
 
 }
 
 
-function playAlert(){
+/* =====================================================
+   KOMPASS-BERECHTIGUNG
+===================================================== */
 
-    if(!audioContext)
-        return;
+async function askForOrientation(){
 
-    const osc =
-        audioContext.createOscillator();
+    try{
 
-    const gain =
-        audioContext.createGain();
+        /*
+           iPhone / iPad
+        */
 
-    osc.type =
-        "square";
+        if(
+            typeof DeviceOrientationEvent !== "undefined" &&
+            typeof DeviceOrientationEvent.requestPermission === "function"
+        ){
 
-    osc.frequency.value =
-        880;
+            const result =
+                await DeviceOrientationEvent.requestPermission();
 
-    gain.gain.setValueAtTime(
-        .08,
-        audioContext.currentTime
-    );
+            if(result !== "granted"){
 
-    gain.gain.exponentialRampToValueAtTime(
-        .001,
-        audioContext.currentTime + .25
-    );
-
-    osc.connect(gain);
-
-    gain.connect(
-        audioContext.destination
-    );
-
-    osc.start();
-
-    osc.stop(
-        audioContext.currentTime + .25
-    );
-
-}
-
-
-function playHit(){
-
-    if(!audioContext)
-        return;
-
-    const osc =
-        audioContext.createOscillator();
-
-    const gain =
-        audioContext.createGain();
-
-    osc.type =
-        "sawtooth";
-
-    osc.frequency.setValueAtTime(
-        220,
-        audioContext.currentTime
-    );
-
-    osc.frequency.exponentialRampToValueAtTime(
-        80,
-        audioContext.currentTime + .5
-    );
-
-    gain.gain.setValueAtTime(
-        .15,
-        audioContext.currentTime
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-        .001,
-        audioContext.currentTime + .5
-    );
-
-    osc.connect(gain);
-
-    gain.connect(
-        audioContext.destination
-    );
-
-    osc.start();
-
-    osc.stop(
-        audioContext.currentTime + .5
-    );
-
-}
-
-
-function spawnDemoDrone(){
-
-    const type =
-        DRONE_TYPES[1];
-
-    drone = {
-
-        type:type,
-
-        bearing:
-            (
-                currentHeading +
-                25 +
-                360
-            ) % 360,
-
-        distance:45,
-
-        speed:type.speed,
-
-        size:1,
-
-        rotation:0,
-
-        wobble:
-            Math.random() * 1000,
-
-        created:
-            Date.now(),
-
-        destroyed:false
-
-    };
-
-    lastSpawn =
-        Date.now();
-
-    droneType.innerText =
-        "PC TEST // " +
-        type.label;
-
-    droneType.style.display =
-        "block";
-
-    droneType.style.color =
-        type.color;
-
-    droneType.style.borderColor =
-        type.color;
-
-    status.innerText =
-        "🖥️ PC TEST – DROHNE ERKANNT";
-
-    status.className =
-        "status warning";
-
-    playAlert();
-
-    startDroneAudio();
-
-}
-
-
-function spawnDrone(){
-
-    const type =
-        randomDroneType();
-
-    const offset =
-        Math.random() * 240 - 120;
-
-    drone = {
-
-        type:type,
-
-        bearing:
-            (
-                currentHeading +
-                offset +
-                360
-            ) % 360,
-
-        distance:
-            type.minDistance +
-            Math.random() *
-            (
-                type.maxDistance -
-                type.minDistance
-            ),
-
-        speed:type.speed,
-
-        size:1,
-
-        rotation:0,
-
-        wobble:
-            Math.random() * 1000,
-
-        created:
-            Date.now(),
-
-        destroyed:false
-
-    };
-
-    lastSpawn =
-        Date.now();
-
-    droneType.innerText =
-        type.label;
-
-    droneType.style.display =
-        "block";
-
-    droneType.style.color =
-        type.color;
-
-    droneType.style.borderColor =
-        type.color;
-
-    status.innerText =
-        "🚨 DROHNE ERKANNT";
-
-    status.className =
-        "status warning";
-
-    playAlert();
-
-    startDroneAudio();
-
-}
-
-
-function updateDrone(){
-
-    if(!drone)
-        return;
-
-    drone.distance -=
-        drone.speed;
-
-    drone.rotation +=
-        .025;
-
-    drone.bearing +=
-        Math.sin(
-            Date.now()/1000 +
-            drone.wobble
-        ) * .008;
-
-    drone.bearing =
-        (
-            drone.bearing +
-            360
-        ) % 360;
-
-
-    if(
-        drone.distance <= 8
-    ){
-
-        status.innerText =
-            "⚠️ DROHNE ZU NAH";
-
-        status.className =
-            "status danger";
-
-    }
-
-
-    if(
-        drone.distance <= 2
-    ){
-
-        status.innerText =
-            "❌ ZIEL NICHT ABGEFANGEN";
-
-        status.className =
-            "status danger";
-
-        drone = null;
-
-        stopDroneAudio();
-
-        droneType.style.display =
-            "none";
-
-    }
-
-}
-
-
-if(desktopTestMode){
-
-    document.addEventListener(
-        "pointermove",
-        function(e){
-
-            if(
-                !running ||
-                !desktopTestMode ||
-                e.target.closest("button")
-            ){
-
-                lastPointerX = null;
+                orientationAvailable = false;
 
                 return;
+            }
+        }
 
+
+        window.addEventListener(
+            "deviceorientationabsolute",
+            orientationHandler,
+            true
+        );
+
+        window.addEventListener(
+            "deviceorientation",
+            orientationHandler,
+            true
+        );
+
+        orientationAvailable = true;
+
+    }
+
+    catch(error){
+
+        orientationAvailable = false;
+    }
+
+}
+
+
+/* =====================================================
+   ORIENTIERUNG
+===================================================== */
+
+function orientationHandler(event){
+
+    let value = null;
+
+
+    /*
+       iPhone
+    */
+
+    if(
+        typeof event.webkitCompassHeading === "number"
+    ){
+
+        value =
+            event.webkitCompassHeading;
+    }
+
+
+    /*
+       Android / Standard
+    */
+
+    else if(
+        typeof event.alpha === "number"
+    ){
+
+        value =
+            360 - event.alpha;
+    }
+
+
+    if(value !== null){
+
+        heading =
+            normalize(value);
+
+        updateRadar();
+    }
+
+}
+
+
+/* =====================================================
+   GPS TRACKING
+===================================================== */
+
+function startGPS(){
+
+    if(gpsWatch !== null){
+
+        navigator.geolocation.clearWatch(
+            gpsWatch
+        );
+    }
+
+
+    status.textContent =
+        "📡 GPS AKTIV";
+
+
+    gpsWatch =
+        navigator.geolocation.watchPosition(
+
+            function(position){
+
+                latitude =
+                    position.coords.latitude;
+
+                longitude =
+                    position.coords.longitude;
+
+                accuracy =
+                    position.coords.accuracy;
+
+                updateGame();
+            },
+
+
+            function(){
+
+                status.textContent =
+                    "⚠️ GPS-SIGNAL VERLOREN";
+            },
+
+
+            {
+                enableHighAccuracy:true,
+                maximumAge:1000,
+                timeout:15000
             }
 
-            if(lastPointerX === null){
-
-                lastPointerX =
-                    e.clientX;
-
-                return;
-
-            }
-
-            currentHeading =
-                (
-                    currentHeading +
-                    (
-                        e.clientX -
-                        lastPointerX
-                    ) * .25 +
-                    360
-                ) % 360;
-
-            smoothHeading =
-                currentHeading;
-
-            lastPointerX =
-                e.clientX;
-
-        },
-        true
-    );
-
-
-    document.addEventListener(
-        "pointerleave",
-        function(){
-
-            lastPointerX = null;
-
-        }
-    );
-
-
-    document.addEventListener(
-        "keydown",
-        function(e){
-
-            if(
-                !running ||
-                !desktopTestMode
-            )
-                return;
-
-            if(
-                e.key === "ArrowLeft"
-            )
-                currentHeading -= 3;
-
-            if(
-                e.key === "ArrowRight"
-            )
-                currentHeading += 3;
-
-            currentHeading =
-                (
-                    currentHeading +
-                    360
-                ) % 360;
-
-            smoothHeading =
-                currentHeading;
-
-        }
-    );
+        );
 
 }
 
 
-function handleOrientation(e){
+/* =====================================================
+   SPIEL BERECHNEN
+===================================================== */
+
+function updateGame(){
 
     if(
-        desktopTestMode ||
-        typeof e.alpha !== "number"
-    )
-        return;
-
-    currentHeading =
-        e.alpha;
-
-}
-
-
-function drawAR(){
-
-    ctx.clearRect(
-        0,
-        0,
-        W,
-        H
-    );
-
-
-    if(!drone){
-
-        targetBox.style.display =
-            "none";
-
-        targetInfo.style.display =
-            "none";
-
-        radarDot.style.display =
-            "none";
-
-        return;
-
-    }
-
-
-    const relAngle =
-        normalizeAngle(
-            drone.bearing -
-            currentHeading
-        );
-
-    const FOV =
-        70;
-
-    const x =
-        W/2 +
-        (
-            relAngle /
-            FOV
-        ) * W;
-
-    const y =
-        H * .39 +
-        Math.sin(
-            Date.now()/500 +
-            drone.wobble
-        ) * 12;
-
-    const scale =
-        clamp(
-            1.8 -
-            drone.distance / 70,
-            .55,
-            1.8
-        );
-
-
-    if(
-        x < -120 ||
-        x > W + 120
+        latitude === null ||
+        longitude === null
     ){
 
-        targetBox.style.display =
-            "none";
-
-        targetInfo.style.display =
-            "none";
-
-        const edgeX =
-            x < 0
-                ? 35
-                : W - 35;
-
-        ctx.save();
-
-        ctx.translate(
-            edgeX,
-            H * .39
-        );
-
-        ctx.fillStyle =
-            "#ff3048";
-
-        ctx.shadowColor =
-            "#ff3048";
-
-        ctx.shadowBlur =
-            15;
-
-        ctx.beginPath();
-
-        if(x < 0){
-
-            ctx.moveTo(
-                -18,
-                0
-            );
-
-            ctx.lineTo(
-                10,
-                -15
-            );
-
-            ctx.lineTo(
-                10,
-                15
-            );
-
-        }else{
-
-            ctx.moveTo(
-                18,
-                0
-            );
-
-            ctx.lineTo(
-                -10,
-                -15
-            );
-
-            ctx.lineTo(
-                -10,
-                15
-            );
-
-        }
-
-        ctx.closePath();
-
-        ctx.fill();
-
-        ctx.restore();
-
-        updateDirection(
-            relAngle
-        );
-
-        updateRadar(
-            relAngle
-        );
-
         return;
-
     }
 
 
-    drawDrone(
-        ctx,
-        x,
-        y,
-        scale,
-        drone.type.color
-    );
-
-
-    const boxW =
-        85 * scale;
-
-    const boxH =
-        65 * scale;
-
-
-    targetBox.style.display =
-        "block";
-
-    targetBox.style.left =
-        (
-            x -
-            boxW/2
-        ) + "px";
-
-    targetBox.style.top =
-        (
-            y -
-            boxH/2
-        ) + "px";
-
-    targetBox.style.width =
-        boxW + "px";
-
-    targetBox.style.height =
-        boxH + "px";
-
-    targetBox.style.borderColor =
-        drone.type.color;
-
-
-    targetInfo.style.display =
-        "block";
-
-    targetInfo.style.left =
-        (
-            x -
-            45
-        ) + "px";
-
-    targetInfo.style.top =
-        (
-            y +
-            boxH/2 +
-            8
-        ) + "px";
-
-    targetInfo.innerText =
-        drone.type.label +
-        " // " +
-        distanceText(
-            drone.distance
+    const distance =
+        calculateDistance(
+            latitude,
+            longitude,
+            TARGET_LAT,
+            TARGET_LON
         );
 
 
-    updateLock(
-        relAngle
-    );
-
-    updateDirection(
-        relAngle
-    );
-
-    updateRadar(
-        relAngle
-    );
-
-}
-
-
-function drawDrone(
-    ctx,
-    x,
-    y,
-    scale,
-    color
-){
-
-    ctx.save();
-
-    ctx.translate(
-        x,
-        y
-    );
-
-    ctx.scale(
-        scale,
-        scale
-    );
-
-    const t =
-        Date.now() / 1000;
-
-
-    ctx.save();
-
-    const shadowGrad =
-        ctx.createRadialGradient(
-            0,
-            28,
-            5,
-            0,
-            28,
-            70
+    targetBearing =
+        calculateBearing(
+            latitude,
+            longitude,
+            TARGET_LAT,
+            TARGET_LON
         );
 
-    shadowGrad.addColorStop(
-        0,
-        "rgba(0,0,0,.45)"
-    );
 
-    shadowGrad.addColorStop(
-        1,
-        "rgba(0,0,0,0)"
-    );
+    distanceOutput.textContent =
+        Math.round(distance);
 
-    ctx.fillStyle =
-        shadowGrad;
 
-    ctx.beginPath();
+    accuracyOutput.textContent =
+        "GPS-Genauigkeit: ±" +
+        Math.round(accuracy) +
+        " m";
 
-    ctx.ellipse(
-        0,
-        28,
-        65,
-        18,
-        0,
-        0,
-        Math.PI * 2
-    );
 
-    ctx.fill();
-
-    ctx.restore();
-
-
-    const motors =
-        [
-            [-53,-22],
-            [53,-22],
-            [-53,22],
-            [53,22]
-        ];
-
-
-    motors.forEach(
-        (m,idx) => {
-
-            const mx =
-                m[0];
-
-            const my =
-                m[1];
-
-            ctx.fillStyle =
-                "#292d30";
-
-            ctx.strokeStyle =
-                "#555";
-
-            ctx.lineWidth =
-                1.2;
-
-            ctx.beginPath();
-
-            ctx.arc(
-                mx,
-                my,
-                7,
-                0,
-                Math.PI*2
-            );
-
-            ctx.fill();
-
-            ctx.stroke();
-
-
-            ctx.save();
-
-            ctx.translate(
-                mx,
-                my
-            );
-
-            ctx.rotate(
-                t *
-                (
-                    idx % 2 === 0
-                        ? 8
-                        : -8
-                )
-            );
-
-            ctx.fillStyle =
-                "rgba(210,215,220,.18)";
-
-            ctx.strokeStyle =
-                "rgba(230,235,240,.4)";
-
-            ctx.lineWidth =
-                .8;
-
-            ctx.beginPath();
-
-            ctx.ellipse(
-                0,
-                -14,
-                2.5,
-                14,
-                0,
-                0,
-                Math.PI*2
-            );
-
-            ctx.fill();
-
-            ctx.stroke();
-
-
-            ctx.beginPath();
-
-            ctx.ellipse(
-                0,
-                14,
-                2.5,
-                14,
-                0,
-                0,
-                Math.PI*2
-            );
-
-            ctx.fill();
-
-            ctx.stroke();
-
-            ctx.restore();
-
-        }
-    );
-
-
-    ctx.lineCap =
-        "round";
-
-    ctx.lineWidth =
-        8;
-
-    ctx.strokeStyle =
-        "#181b1e";
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        -12,
-        -6
-    );
-
-    ctx.lineTo(
-        -53,
-        -22
-    );
-
-    ctx.moveTo(
-        12,
-        -6
-    );
-
-    ctx.lineTo(
-        53,
-        -22
-    );
-
-    ctx.moveTo(
-        -12,
-        6
-    );
-
-    ctx.lineTo(
-        -53,
-        22
-    );
-
-    ctx.moveTo(
-        12,
-        6
-    );
-
-    ctx.lineTo(
-        53,
-        22
-    );
-
-    ctx.stroke();
-
-
-    const bodyGrad =
-        ctx.createLinearGradient(
-            0,
-            -24,
-            0,
-            25
-        );
-
-    bodyGrad.addColorStop(
-        0,
-        "#555b60"
-    );
-
-    bodyGrad.addColorStop(
-        .25,
-        "#30353a"
-    );
-
-    bodyGrad.addColorStop(
-        1,
-        "#080a0b"
-    );
-
-    ctx.fillStyle =
-        bodyGrad;
-
-    ctx.strokeStyle =
-        "#60666b";
-
-    ctx.lineWidth =
-        1.3;
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        -27,
-        -17
-    );
-
-    ctx.quadraticCurveTo(
-        -20,
-        -29,
-        0,
-        -31
-    );
-
-    ctx.quadraticCurveTo(
-        20,
-        -29,
-        27,
-        -17
-    );
-
-    ctx.lineTo(
-        23,
-        16
-    );
-
-    ctx.quadraticCurveTo(
-        18,
-        25,
-        0,
-        28
-    );
-
-    ctx.quadraticCurveTo(
-        -18,
-        25,
-        -23,
-        16
-    );
-
-    ctx.closePath();
-
-    ctx.fill();
-
-    ctx.stroke();
-
-
-    ctx.shadowBlur =
-        10;
-
-    ctx.shadowColor =
-        "#ff3048";
-
-    ctx.fillStyle =
-        "#ff3048";
-
-    ctx.beginPath();
-
-    ctx.arc(
-        -22,
-        5,
-        2,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-
-    ctx.shadowColor =
-        "#26f7c5";
-
-    ctx.fillStyle =
-        "#26f7c5";
-
-    ctx.beginPath();
-
-    ctx.arc(
-        22,
-        5,
-        2,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fill();
-
-    ctx.shadowBlur =
-        0;
-
-    ctx.restore();
-
-}
-
-
-function updateLock(angle){
-
-    const abs =
-        Math.abs(angle);
-
-
-    if(abs > 25){
-
-        lockLabel.innerText =
-            "TARGET SEARCH";
-
-        lockLabel.style.color =
-            "#ff3048";
-
-        lockLabel.style.borderColor =
-            "#ff3048";
-
-        status.innerText =
-            "ZIEL SUCHEN";
-
-        status.className =
-            "status danger";
-
-    }
-
-    else if(abs > 8){
-
-        lockLabel.innerText =
-            "ALIGN TARGET";
-
-        lockLabel.style.color =
-            "#ffb020";
-
-        lockLabel.style.borderColor =
-            "#ffb020";
-
-        status.innerText =
-            "AUSRICHTEN";
-
-        status.className =
-            "status warning";
-
-    }
-
-    else if(abs > 3){
-
-        lockLabel.innerText =
-            "FAST LOCK";
-
-        lockLabel.style.color =
-            "#26f7c5";
-
-        lockLabel.style.borderColor =
-            "#26f7c5";
-
-        status.innerText =
-            "FAST LOCK";
-
-        status.className =
-            "status";
-
-    }
-
-    else{
-
-        lockLabel.innerText =
-            "TARGET LOCK";
-
-        lockLabel.style.color =
-            "#00ffff";
-
-        lockLabel.style.borderColor =
-            "#00ffff";
-
-        status.innerText =
-            "🎯 TARGET LOCK";
-
-        status.className =
-            "status";
-
-    }
-
-}
-
-
-/* GEÄNDERT: Links/Rechts korrigiert */
-function updateDirection(angle){
-
-    const abs =
-        Math.abs(angle);
-
-    directionDeg.innerText =
-        Math.round(abs) +
+    bearingOutput.textContent =
+        "Zielrichtung: " +
+        Math.round(targetBearing) +
         "°";
 
 
-    if(abs <= 3){
+    if(distance <= TARGET_RADIUS){
 
-        directionArrow.innerText =
-            "🎯";
+        status.textContent =
+            "🎯 ZIELBEREICH ERREICHT";
 
-        directionArrow.style.color =
-            "#00ffff";
-
-        directionText.innerText =
-            "ZIEL ERFASST";
-
-    }
-
-    else if(angle > 0){
-
-        directionArrow.innerText =
-            "←";
-
-        directionArrow.style.color =
-            "#ffb020";
-
-        directionText.innerText =
-            "NACH LINKS DREHEN";
-
+        cameraButton.style.display =
+            "block";
     }
 
     else{
 
-        directionArrow.innerText =
-            "→";
+        status.textContent =
+            "🔎 ZIEL SUCHEN";
 
-        directionArrow.style.color =
-            "#ffb020";
-
-        directionText.innerText =
-            "NACH RECHTS DREHEN";
-
+        cameraButton.style.display =
+            "none";
     }
 
+
+    updateRadar();
 }
 
 
-function updateRadar(relAngle){
+/* =====================================================
+   RADAR
+===================================================== */
 
-    radarAngle +=
-        2;
+function updateRadar(){
 
-    radarSweep.style.transform =
-        "rotate(" +
-        radarAngle +
-        "deg)";
+    if(
+        latitude === null ||
+        longitude === null
+    ){
+
+        return;
+    }
 
 
-    const r =
-        43;
+    const distance =
+        calculateDistance(
+            latitude,
+            longitude,
+            TARGET_LAT,
+            TARGET_LON
+        );
 
-    const rad =
-        relAngle *
+
+    const size =
+        radar.clientWidth;
+
+    const center =
+        size / 2;
+
+
+    /*
+       Zielentfernung auf Radar umrechnen
+    */
+
+    let radius =
+        distance /
+        RADAR_RANGE *
+        center;
+
+
+    radius =
+        Math.min(
+            radius,
+            center - 20
+        );
+
+
+    /*
+       Richtung relativ zur
+       Handy-Ausrichtung
+    */
+
+    let angle =
+        targetBearing -
+        heading;
+
+
+    angle =
+        normalize(angle);
+
+
+    const radians =
+        angle *
         Math.PI /
         180;
 
 
-    radarDot.style.display =
-        "block";
+    const x =
+        center +
+        Math.sin(radians) *
+        radius;
 
-    radarDot.style.left =
-        (
-            52 +
-            Math.sin(rad) * r -
-            3.5
-        ) + "px";
 
-    radarDot.style.top =
-        (
-            52 -
-            Math.cos(rad) * r -
-            3.5
-        ) + "px";
+    const y =
+        center -
+        Math.cos(radians) *
+        radius;
+
+
+    target.style.left =
+        x + "px";
+
+    target.style.top =
+        y + "px";
+
+
+    /*
+       Wenn kein Kompass verfügbar ist,
+       bleibt das Radar nordausgerichtet.
+    */
+
+    if(!orientationAvailable){
+
+        const northRadians =
+            targetBearing *
+            Math.PI /
+            180;
+
+
+        target.style.left =
+            center +
+            Math.sin(northRadians) *
+            radius +
+            "px";
+
+
+        target.style.top =
+            center -
+            Math.cos(northRadians) *
+            radius +
+            "px";
+    }
 
 }
 
 
-function fire(){
+/* =====================================================
+   RADARSTRAHL
+===================================================== */
 
-    if(!running)
-        return;
+function startRadar(){
 
+    /*
+       Verhindert mehrere Radar-Animationen
+       beim Neustart.
+    */
 
-    if(!drone){
+    if(radarAnimation !== null){
 
-        status.innerText =
-            "KEIN ZIEL";
+        cancelAnimationFrame(
+            radarAnimation
+        );
 
-        status.className =
-            "status danger";
-
-        return;
-
+        radarAnimation = null;
     }
 
 
-    const angle =
-        Math.abs(
-            normalizeAngle(
-                drone.bearing -
-                currentHeading
-            )
-        );
+    function animate(){
+
+        sweepAngle += 1.6;
 
 
-    /* NEU: Abfangreichweite abhängig vom Level */
-    const interceptRange =
-        getInterceptRange();
+        if(sweepAngle >= 360){
 
-
-    if(
-        angle <= 3 &&
-        drone.distance <= interceptRange
-    ){
-
-        const points =
-            drone.type.points;
-
-
-        score +=
-            points;
-
-
-        if(score > highscore){
-
-            highscore =
-                score;
-
-            localStorage.setItem(
-                "blankenhagen_drohnenjagd_highscore",
-                highscore
-            );
-
+            sweepAngle = 0;
         }
 
 
-        scoreEl.innerText =
-            score;
-
-        highscoreEl.innerText =
-            highscore;
-
-
-        playHit();
+        sweep.style.transform =
+            "rotate(" +
+            sweepAngle +
+            "deg)";
 
 
-        status.innerText =
-            "💥 ZIEL ABGEFANGEN +" +
-            points;
-
-        status.className =
-            "status";
+        sweepGlow.style.transform =
+            "rotate(" +
+            sweepAngle +
+            "deg)";
 
 
-        explode();
-
-
-        drone =
-            null;
-
-        stopDroneAudio();
-
-        droneType.style.display =
-            "none";
-
-
-        level =
-            Math.floor(
-                score / 500
-            ) + 1;
-
-
-        levelEl.innerText =
-            level;
-
+        radarAnimation =
+            requestAnimationFrame(
+                animate
+            );
     }
 
-    else if(
-        angle <= 3 &&
-        drone.distance > interceptRange
-    ){
 
-        status.innerText =
-            "❌ ZU WEIT – MAX. " +
-            interceptRange +
-            " m";
-
-        status.className =
-            "status warning";
-
-        playAlert();
-
-    }
-
-    else{
-
-        status.innerText =
-            "❌ FEHLER – NICHT IM LOCK";
-
-        status.className =
-            "status danger";
-
-        playAlert();
-
-    }
-
+    animate();
 }
 
 
-function explode(){
+/* =====================================================
+   KAMERA ÖFFNEN
+===================================================== */
 
-    const cx =
-        W/2;
+cameraButton.addEventListener(
+    "click",
+    openCamera
+);
 
-    const cy =
-        H*.39;
 
-    const start =
-        Date.now();
-
-
-    function animation(){
-
-        const progress =
-            (
-                Date.now() -
-                start
-            ) / 700;
-
-
-        if(progress >= 1)
-            return;
-
-
-        ctx.save();
-
-
-        ctx.globalAlpha =
-            1 - progress;
-
-        ctx.strokeStyle =
-            "#ffb020";
-
-        ctx.shadowColor =
-            "#ff3048";
-
-        ctx.shadowBlur =
-            25;
-
-
-        for(
-            let i=0;
-            i<18;
-            i++
-        ){
-
-            const a =
-                i *
-                Math.PI*2 /
-                18;
-
-            const r =
-                progress *
-                80;
-
-
-            ctx.beginPath();
-
-
-            ctx.moveTo(
-                cx +
-                Math.cos(a) *
-                r*.3,
-
-                cy +
-                Math.sin(a) *
-                r*.3
-            );
-
-
-            ctx.lineTo(
-                cx +
-                Math.cos(a) *
-                r,
-
-                cy +
-                Math.sin(a) *
-                r
-            );
-
-
-            ctx.stroke();
-
-        }
-
-
-        ctx.restore();
-
-
-        requestAnimationFrame(
-            animation
-        );
-
-    }
-
-
-    animation();
-
-}
-
-
-function gameLoop(){
-
-    if(!running)
-        return;
-
-
-    analyseMicrophone();
-
-    updateDrone();
-
-    updateDroneAudio();
-
-    drawAR();
-
-}
-
-
-async function startSystem(){
-
-    if(running)
-        return;
-
-
-    // Zwingende Sensor-Berechtigung für iPhones (iOS) direkt beim Klick abfragen
-    if(
-        typeof DeviceOrientationEvent !== "undefined" &&
-        typeof DeviceOrientationEvent.requestPermission === "function"
-    ){
-
-        try{
-
-            const response =
-                await DeviceOrientationEvent.requestPermission();
-
-
-            if(response === "granted"){
-
-                window.addEventListener(
-                    "deviceorientation",
-                    handleOrientation,
-                    true
-                );
-
-            }
-
-        }catch(e){
-
-            console.log(
-                "Sensor-Berechtigung fehlgeschlagen:",
-                e
-            );
-
-        }
-
-    }
-
-    else{
-
-        // Für Android und andere Geräte direkt registrieren
-        window.addEventListener(
-            "deviceorientation",
-            handleOrientation,
-            true
-        );
-
-    }
-
-
-    running =
-        true;
-
-
-    startOverlay.style.display =
-        "none";
-
-
-    score =
-        0;
-
-    level =
-        1;
-
-
-    scoreEl.innerText =
-        score;
-
-    levelEl.innerText =
-        level;
-
-
-    status.innerText =
-        "SYSTEM WIRD GESTARTET...";
-
-    status.className =
-        "status";
-
+async function openCamera(){
 
     try{
 
@@ -2226,273 +1417,234 @@ async function startSystem(){
             });
 
 
-        video.srcObject =
+        camera.srcObject =
             cameraStream;
 
-        video.play();
+
+        gameScreen.style.display =
+            "none";
+
+
+        cameraScreen.style.display =
+            "block";
 
     }
 
-    catch(e){
+    catch(error){
 
-        status.innerText =
-            "KAMERA NICHT VERFÜGBAR";
-
-        status.className =
-            "status warning";
-
-    }
-
-
-    await initAudio();
-
-
-    if(!desktopTestMode){
-
-        document
-            .getElementById("mode")
-            .innerText =
-            "AR-KAMERA PROTOTYP";
-
-    }
-
-    else{
-
-        document
-            .getElementById("mode")
-            .innerText =
-            "PC TEST // AR-KAMERA";
-
-        status.innerText =
-            "🖥️ PC TESTMODUS – MAUS ODER ← → DREHEN";
-
-    }
-
-
-    gameTimer =
-        setInterval(
-            gameLoop,
-            40
+        showError(
+            "Die Kamera konnte nicht geöffnet werden."
         );
-
-
-    setTimeout(
-        function(){
-
-            if(
-                running &&
-                !drone
-            ){
-
-                if(desktopTestMode)
-
-                    spawnDemoDrone();
-
-                else
-
-                    spawnDrone();
-
-            }
-
-        },
-        desktopTestMode
-            ? 900
-            : 1800
-    );
+    }
 
 }
 
 
-document
-    .getElementById("startGame")
-    .addEventListener(
-        "click",
-        startSystem
-    );
+/* =====================================================
+   ZIEL GEFUNDEN
+===================================================== */
 
-
-startBtn.addEventListener(
+foundButton.addEventListener(
     "click",
-    startSystem
-);
-
-
-/* IMPRESSUM */
-impressumBtn.addEventListener(
-    "click",
-    function(e){
-
-        e.stopPropagation();
-
-        impressumModal.style.display =
-            "flex";
-
-    }
-);
-
-
-closeImpressum.addEventListener(
-    "click",
-    function(e){
-
-        e.stopPropagation();
-
-        impressumModal.style.display =
-            "none";
-
-    }
-);
-
-
-fireBtn.addEventListener(
-    "click",
-    fire
-);
-
-
-document
-    .getElementById("app")
-    .addEventListener(
-        "click",
-        function(e){
-
-            if(
-                e.target.tagName !== "BUTTON" &&
-                running
-            ){
-
-                fire();
-
-            }
-
-        }
-    );
-
-
-document
-    .getElementById("cameraBtn")
-    .addEventListener(
-        "click",
-        function(){
-
-            video.classList.remove(
-                "hidden"
-            );
-
-            document
-                .getElementById("radar")
-                .classList.add(
-                    "hidden"
-                );
-
-        }
-    );
-
-
-document
-    .getElementById("radarBtn")
-    .addEventListener(
-        "click",
-        function(){
-
-            video.classList.add(
-                "hidden"
-            );
-
-            document
-                .getElementById("radar")
-                .classList.remove(
-                    "hidden"
-                );
-
-        }
-    );
-
-
-spawnTimer =
-    setInterval(
-        function(){
-
-            if(
-                running &&
-                !drone
-            ){
-
-                const delay =
-                    1500 +
-                    Math.random() *
-                    3500;
-
-
-                setTimeout(
-                    function(){
-
-                        if(
-                            running &&
-                            !drone
-                        ){
-
-                            if(desktopTestMode)
-
-                                spawnDemoDrone();
-
-                            else
-
-                                spawnDrone();
-
-                        }
-
-                    },
-                    delay
-                );
-
-            }
-
-        },
-        1000
-    );
-
-
-window.addEventListener(
-    "pagehide",
     function(){
 
-        running =
-            false;
+        stopCamera();
 
+        cameraScreen.style.display =
+            "none";
 
-        if(gameTimer)
-
-            clearInterval(
-                gameTimer
-            );
-
-
-        if(spawnTimer)
-
-            clearInterval(
-                spawnTimer
-            );
-
-
-        stopDroneAudio();
-
-
-        if(cameraStream)
-
-            cameraStream
-                .getTracks()
-                .forEach(
-                    t => t.stop()
-                );
-
-
-        if(audioContext)
-
-            audioContext.close();
-
+        success.style.display =
+            "flex";
     }
 );
+
+
+/* =====================================================
+   KAMERA STOPPEN
+===================================================== */
+
+function stopCamera(){
+
+    if(cameraStream){
+
+        cameraStream
+            .getTracks()
+            .forEach(
+                function(track){
+
+                    track.stop();
+                }
+            );
+
+        cameraStream = null;
+
+        camera.srcObject = null;
+    }
+
+}
+
+
+/* =====================================================
+   NEUSTART
+===================================================== */
+
+againButton.addEventListener(
+    "click",
+    function(){
+
+        success.style.display =
+            "none";
+
+        gameScreen.style.display =
+            "flex";
+
+        cameraButton.style.display =
+            "none";
+
+        startGPS();
+
+        startRadar();
+    }
+);
+
+
+/* =====================================================
+   ENTFERNUNG
+===================================================== */
+
+function calculateDistance(
+    lat1,
+    lon1,
+    lat2,
+    lon2
+){
+
+    const R = 6371000;
+
+    const p1 =
+        lat1 * Math.PI / 180;
+
+    const p2 =
+        lat2 * Math.PI / 180;
+
+    const dp =
+        (lat2-lat1) *
+        Math.PI / 180;
+
+    const dl =
+        (lon2-lon1) *
+        Math.PI / 180;
+
+
+    const a =
+        Math.sin(dp/2) *
+        Math.sin(dp/2) +
+
+        Math.cos(p1) *
+        Math.cos(p2) *
+
+        Math.sin(dl/2) *
+        Math.sin(dl/2);
+
+
+    const c =
+        2 *
+        Math.atan2(
+            Math.sqrt(a),
+            Math.sqrt(1-a)
+        );
+
+
+    return R * c;
+}
+
+
+/* =====================================================
+   RICHTUNG
+===================================================== */
+
+function calculateBearing(
+    lat1,
+    lon1,
+    lat2,
+    lon2
+){
+
+    const p1 =
+        lat1 * Math.PI / 180;
+
+    const p2 =
+        lat2 * Math.PI / 180;
+
+    const dl =
+        (lon2-lon1) *
+        Math.PI / 180;
+
+
+    const y =
+        Math.sin(dl) *
+        Math.cos(p2);
+
+
+    const x =
+        Math.cos(p1) *
+        Math.sin(p2) -
+
+        Math.sin(p1) *
+        Math.cos(p2) *
+        Math.cos(dl);
+
+
+    return normalize(
+        Math.atan2(y,x) *
+        180 /
+        Math.PI
+    );
+}
+
+
+/* =====================================================
+   WINKEL
+===================================================== */
+
+function normalize(value){
+
+    value =
+        value % 360;
+
+
+    if(value < 0){
+
+        value += 360;
+    }
+
+
+    return value;
+}
+
+
+/* =====================================================
+   FEHLER
+===================================================== */
+
+function showError(message){
+
+    errorBox.textContent =
+        message;
+
+    errorBox.style.display =
+        "block";
+}
+
+
+function hideError(){
+
+    errorBox.textContent =
+        "";
+
+    errorBox.style.display =
+        "none";
+}
 
 </script>
 
