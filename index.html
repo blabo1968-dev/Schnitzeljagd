@@ -51,6 +51,7 @@
             width: 100%;
             max-width: 500px;
             margin: 0 auto;
+            overflow-y: auto;
         }
         #gameScreen, #cameraScreen, #success { display: none; }
 
@@ -196,9 +197,9 @@
         .control-panel { 
             background: #222; 
             border: 1px solid #444; 
-            padding: 12px; 
+            padding: 10px; 
             border-radius: 8px; 
-            margin-bottom: 10px; 
+            margin-bottom: 8px; 
             width: 100%; 
             font-size: 13px;
         }
@@ -207,7 +208,7 @@
             display: flex;
             justify-content: center;
             gap: 8px;
-            margin-top: 8px;
+            margin-top: 6px;
         }
 
         .radius-btn {
@@ -229,6 +230,72 @@
         }
         
         .info-text { font-size: clamp(13px, 3vw, 15px); margin: 3px 0; }
+
+        /* Impressum Modal (Aufklappfenster) */
+        #legalModal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .modal-content {
+            background: #181818;
+            border: 2px solid #ff6600;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 20px;
+            text-align: left;
+            box-shadow: 0 0 25px rgba(255, 102, 0, 0.3);
+        }
+
+        .modal-content h3 {
+            color: #ff6600;
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-align: center;
+            text-transform: uppercase;
+            border-bottom: 1px solid #333;
+            padding-bottom: 8px;
+        }
+
+        .modal-section {
+            margin-bottom: 12px;
+            font-size: 12px;
+            color: #ccc;
+            line-height: 1.4;
+        }
+
+        .modal-section strong {
+            color: #ff6600;
+            display: block;
+            font-size: 13px;
+            margin-bottom: 2px;
+        }
+
+        .legal-btn {
+            background: #333;
+            color: #ff6600;
+            border: 1px solid #ff6600;
+            padding: 8px 14px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 4px 0 10px 0;
+            font-weight: bold;
+            width: 100%;
+            max-width: 340px;
+        }
     </style>
 </head>
 <body>
@@ -240,10 +307,10 @@
 
     <!-- START-BILDSCHIRM -->
     <div id="startScreen" class="screen">
-        <h1 style="font-size: clamp(18px, 4vw, 24px); margin-bottom: 10px; color: #ff6600;">🎃 HALLOWEEN GEISTERJAGD 👻</h1>
+        <h1 style="font-size: clamp(18px, 4vw, 24px); margin-bottom: 8px; color: #ff6600;">🎃 HALLOWEEN GEISTERJAGD 👻</h1>
         
         <div class="control-panel" style="max-width: 340px;">
-            <strong style="color: #ff6600; font-size: 14px;">🎯 SPIELFELD-GRÖSSE WÄHLEN:</strong><br>
+            <strong style="color: #ff6600; font-size: 13px;">🎯 SPIELFELD-GRÖSSE WÄHLEN:</strong>
             <div class="radius-selector">
                 <button type="button" class="radius-btn" onclick="setPlayRadius(20)">Garten (20m)</button>
                 <button type="button" class="radius-btn active" onclick="setPlayRadius(50)">Park (50m)</button>
@@ -251,12 +318,51 @@
             </div>
         </div>
 
-        <div class="control-panel" style="max-width: 340px; font-size: 12px; color: #ccc; line-height: 1.4;">
+        <div class="control-panel" style="max-width: 340px; font-size: 11px; color: #ccc; line-height: 1.4;">
             <span>ℹ️ 15m Fang-Radius & 4-Minuten-Flucht-Timer aktiv.</span><br>
-            <strong style="color: #ffcc00; display: block; margin-top: 6px;">Achtung im Straßenverkehr: Bitte achtet auf Fahrzeuge und tragt helle Kleidung!</strong>
+            <strong style="color: #ffcc00; display: block; margin-top: 4px;">Achtung im Straßenverkehr: Bitte auf Fahrzeuge achten & helle Kleidung tragen!</strong>
         </div>
 
+        <!-- Button zum Öffnen des Impressums -->
+        <button type="button" class="legal-btn" id="openLegalBtn">⚖️ Impressum & Rechtliche Hinweise</button>
+
         <button id="startButton">GEISTERJAGD STARTEN</button>
+    </div>
+
+    <!-- MODAL / AUFKLAPPFENSTER FÜR IMPRESSUM -->
+    <div id="legalModal">
+        <div class="modal-content">
+            <h3>⚖️ Impressum & Rechtliches</h3>
+            
+            <div class="modal-section">
+                <strong>1. Haftungsausschluss</strong>
+                Die Nutzung erfolgt auf eigene Verantwortung. Bitte auf Umgebung und Verkehr achten.
+            </div>
+
+            <div class="modal-section">
+                <strong>2. Datenschutz</strong>
+                Diese WebApp speichert keine personenbezogenen Daten. Standortdaten werden nicht dauerhaft gespeichert.
+            </div>
+
+            <div class="modal-section">
+                <strong>3. Nutzungsbedingungen</strong>
+                Das Spiel dient der Unterhaltung. Keine Garantie auf Sensor- oder GPS-Genauigkeit. Nutzung auf eigene Gefahr.
+            </div>
+
+            <div class="modal-section">
+                <strong>4. Impressum</strong>
+                Blankenhagen Spieleentwicklung<br>
+                73614 Schorndorf<br>
+                E-Mail: spieleentwicklung@freenet.de
+            </div>
+
+            <div class="modal-section">
+                <strong>Hinweis für Veranstalter</strong>
+                Der Veranstalter (z. B. Verein) ist verantwortlich für die sichere Durchführung des Spiels.
+            </div>
+
+            <button type="button" id="closeLegalBtn" style="background: #ff6600; color: #000; width: 100%; margin-top: 10px;">Schließen</button>
+        </div>
     </div>
 
     <!-- SPIEL-BILDSCHIRM -->
@@ -303,7 +409,7 @@
 
     <!-- ERFOLGS-BILDSCHIRM -->
     <div id="success" class="screen">
-        <h1 style="color: #ff6600; font-size: clamp(20px, 5vw, 28px); margin-bottom: 10px;">🎃 GEISTERJAGD BEENDET! 👻</h1>
+        <h1 style="color: #ff6600; font-size: clamp(20px, 5vw, 28px); margin-bottom: 10px;">🎃 HALLOWEEN GEISTERJAGD BEENDET! 👻</h1>
         <p style="margin-bottom: 15px; font-size: 14px; line-height: 1.5;">
             Du hast alle Geister & Kürbisse erfolgreich eingesaugt!<br><br>
             <strong style="color: #00ff66;">Nun bist du geprüfter Geisterjäger! 👻</strong>
@@ -312,6 +418,26 @@
     </div>
 
 <script>
+// Modal Steuerungs-Logik
+const legalModal = document.getElementById("legalModal");
+const openLegalBtn = document.getElementById("openLegalBtn");
+const closeLegalBtn = document.getElementById("closeLegalBtn");
+
+openLegalBtn.addEventListener("click", () => {
+    legalModal.style.display = "flex";
+});
+
+closeLegalBtn.addEventListener("click", () => {
+    legalModal.style.display = "none";
+});
+
+// Schließen bei Klick außerhalb des Inhalts
+legalModal.addEventListener("click", (e) => {
+    if (e.target === legalModal) {
+        legalModal.style.display = "none";
+    }
+});
+
 let waypoints = [];
 let currentIndex = 0;
 const TOTAL_STATIONS = 5;
