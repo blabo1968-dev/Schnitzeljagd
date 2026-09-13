@@ -327,7 +327,7 @@ const HALLOWEEN_ICONS = ["👻", "🎃", "👻", "🎃", "👻"];
 
 let latitude = null; 
 let longitude = null;
-let accuracy = 0;      
+let accuracy = 0;       
 let targetBearing = 0;
 let heading = 0;
 let cameraStream = null;
@@ -452,10 +452,10 @@ function relocateCurrentWaypoint() {
     
     const metersPerDegree = 111000;
     const randomAngle = Math.random() * 2 * Math.PI;
-    const randomDist = 20 + Math.random() * 30; 
+    const closeDist = 10; 
     
-    const dn = Math.sin(randomAngle) * randomDist;
-    const de = Math.cos(randomAngle) * randomDist;
+    const dn = Math.sin(randomAngle) * closeDist;
+    const de = Math.cos(randomAngle) * closeDist;
 
     const latOffset = dn / metersPerDegree;
     const lonOffset = de / (metersPerDegree * Math.cos(latitude * Math.PI / 180));
@@ -464,7 +464,7 @@ function relocateCurrentWaypoint() {
     waypoints[currentIndex].lon = longitude + lonOffset;
 
     timeLeft = ESCAPE_TIME_SECONDS;
-    alert("👻 Der Geist hat sich unruhig wegbewegt und taucht gleich in deiner Nähe an einem neuen Ort auf!");
+    alert("⚡ Die Zeit ist um! Der Geist nähert sich entkräftet auf 10 Meter und ist jetzt direkt in deiner Reichweite!");
     updateGame();
 }
 
@@ -769,3 +769,6 @@ function normalize(value){
 
 </body>
 </html>
+
+---
+Dieser Text/Dieses Bild/Dieses Video/… wurde unter Zuhilfenahme einer Künstlichen Intelligenz erstellt und von einem Menschen überprüft.
