@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -29,12 +30,14 @@
             border-bottom: 2px solid #ff6600;
             flex-shrink: 0;
         }
+
         header h2 {
             font-size: clamp(14px, 3.5vw, 18px);
             color: #ff6600;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+
         header p {
             font-size: clamp(10px, 2.2vw, 12px);
             color: #aaa;
@@ -52,6 +55,7 @@
             max-width: 500px;
             margin: 0 auto;
         }
+
         #gameScreen, #cameraScreen, #success { display: none; }
 
         button { 
@@ -96,8 +100,24 @@
             background: rgba(255,102,0,0.05); 
             flex-shrink: 0;
         }
-        #sweep, #sweepGlow { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; pointer-events: none; }
-        #sweep { background: conic-gradient(from 0deg, rgba(255,102,0,0.4), transparent 60deg); }
+
+        #sweep, #sweepGlow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        #sweep {
+            background: conic-gradient(
+                from 0deg,
+                rgba(255,102,0,0.4),
+                transparent 60deg
+            );
+        }
         
         #target { 
             width: 16px; 
@@ -228,42 +248,180 @@
             font-weight: bold;
         }
         
-        .info-text { font-size: clamp(13px, 3vw, 15px); margin: 3px 0; }
+        .info-text {
+            font-size: clamp(13px, 3vw, 15px);
+            margin: 3px 0;
+        }
+
+        /* NEU: Regelwerk */
+        .rules-panel {
+            display: none;
+            width: 100%;
+            max-width: 340px;
+            background: #1d1d1d;
+            border: 1px solid #ff6600;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 4px 0 8px 0;
+            text-align: left;
+            font-size: 12px;
+            line-height: 1.45;
+        }
+
+        .rules-panel h3 {
+            color: #ff6600;
+            text-align: center;
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .rules-panel p {
+            margin: 5px 0;
+            color: #ddd;
+        }
+
+        .rules-panel strong {
+            color: #ff6600;
+        }
+
+        .info-button {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 9px 16px;
+            font-size: 13px;
+            margin: 5px;
+        }
+
+        /* NEU: Impressum */
+        .imprint {
+            margin-top: 5px;
+            font-size: 10px;
+            color: #777;
+            line-height: 1.4;
+            max-width: 340px;
+        }
+
+        .imprint strong {
+            color: #999;
+        }
     </style>
 </head>
 <body>
 
     <header>
         <h2>Blankenhagen Spieleentwicklung</h2>
-        <p>Halloween Geisterjagd – Prototyp</p>
+        <p>Halloween Geisterjagd</p>
     </header>
 
     <!-- START-BILDSCHIRM -->
     <div id="startScreen" class="screen">
-        <h1 style="font-size: clamp(18px, 4vw, 24px); margin-bottom: 10px; color: #ff6600;">🎃 HALLOWEEN GEISTERJAGD 👻</h1>
+        <h1 style="font-size: clamp(18px, 4vw, 24px); margin-bottom: 10px; color: #ff6600;">
+            🎃 HALLOWEEN GEISTERJAGD 👻
+        </h1>
         
         <div class="control-panel" style="max-width: 340px;">
-            <strong style="color: #ff6600; font-size: 14px;">🎯 SPIELFELD-GRÖSSE WÄHLEN:</strong><br>
+            <strong style="color: #ff6600; font-size: 14px;">
+                🎯 SPIELFELD-GRÖSSE WÄHLEN:
+            </strong><br>
+
             <div class="radius-selector">
-                <button type="button" class="radius-btn" onclick="setPlayRadius(20)">Garten (20m)</button>
-                <button type="button" class="radius-btn active" onclick="setPlayRadius(50)">Park (50m)</button>
-                <button type="button" class="radius-btn" onclick="setPlayRadius(100)">Stadt (100m)</button>
+                <button type="button" class="radius-btn" onclick="setPlayRadius(20)">
+                    Garten (20m)
+                </button>
+
+                <button type="button" class="radius-btn active" onclick="setPlayRadius(50)">
+                    Park (50m)
+                </button>
+
+                <button type="button" class="radius-btn" onclick="setPlayRadius(100)">
+                    Stadt (100m)
+                </button>
             </div>
         </div>
 
         <div class="control-panel" style="max-width: 340px; font-size: 12px; color: #ccc; line-height: 1.4;">
             <span>ℹ️ 15m Fang-Radius & 4-Minuten-Flucht-Timer aktiv.</span><br>
-            <strong style="color: #ffcc00; display: block; margin-top: 6px;">Achtung im Straßenverkehr: Bitte achtet auf Fahrzeuge und tragt helle Kleidung!</strong>
+
+            <strong style="color: #ffcc00; display: block; margin-top: 6px;">
+                Achtung im Straßenverkehr: Bitte achtet auf Fahrzeuge und tragt helle Kleidung!
+            </strong>
         </div>
 
-        <button id="startButton">GEISTERJAGD STARTEN</button>
+        <!-- NEU: REGELWERK BUTTON -->
+        <button type="button" class="info-button" onclick="toggleRules()">
+            📖 SPIELREGELN
+        </button>
+
+        <!-- NEU: REGELWERK -->
+        <div id="rulesPanel" class="rules-panel">
+            <h3>📖 KURZES REGELWERK</h3>
+
+            <p>
+                <strong>1. Start:</strong>
+                Wähle die Größe des Spielfeldes und starte die Geisterjagd.
+            </p>
+
+            <p>
+                <strong>2. Geister suchen:</strong>
+                Das GPS zeigt dir die Entfernung und Richtung zum nächsten Geist.
+            </p>
+
+            <p>
+                <strong>3. Radar:</strong>
+                Folge der angezeigten Richtung und nähere dich dem Ziel.
+            </p>
+
+            <p>
+                <strong>4. Kamera:</strong>
+                Ab einer Entfernung von 15 Metern kannst du die Kamera einschalten
+                und den Geist einsaugen.
+            </p>
+
+            <p>
+                <strong>5. Zeit:</strong>
+                Für jede Station hast du 4 Minuten Zeit. Läuft die Zeit ab,
+                bewegt sich der Geist näher zu dir.
+            </p>
+
+            <p>
+                <strong>6. Ziel:</strong>
+                Finde und sauge alle 5 Geister bzw. Kürbisse ein.
+            </p>
+
+            <p>
+                <strong>⚠️ Wichtig:</strong>
+                Immer auf den Straßenverkehr, andere Personen und deine Umgebung achten.
+            </p>
+        </div>
+
+        <button id="startButton">
+            GEISTERJAGD STARTEN
+        </button>
+
+        <!-- NEU: IMPRESSUM -->
+        <div class="imprint">
+            <strong>Impressum</strong><br>
+            Blankenhagen Spieleentwicklung<br>
+            Jörg Blankenhagen<br>
+            73614 Schorndorf<br>
+            E-Mail: spieleentwicklung@freenet.de
+        </div>
     </div>
 
     <!-- SPIEL-BILDSCHIRM -->
     <div id="gameScreen" class="screen">
-        <div id="stationBadge" class="station-badge">STATION 1 VON 5</div>
-        <div id="status" style="font-weight: bold; color: #ff6600; font-size: 16px; margin-bottom: 3px;">🔎 GEIST SUCHEN</div>
-        <div id="escapeTimerText" style="font-size: 12px; color: #aaa; margin-bottom: 5px;">Flucht in: 04:00</div>
+        <div id="stationBadge" class="station-badge">
+            STATION 1 VON 5
+        </div>
+
+        <div id="status" style="font-weight: bold; color: #ff6600; font-size: 16px; margin-bottom: 3px;">
+            🔎 GEIST SUCHEN
+        </div>
+
+        <div id="escapeTimerText" style="font-size: 12px; color: #aaa; margin-bottom: 5px;">
+            Flucht in: 04:00
+        </div>
         
         <div id="radar">
             <div id="sweep"></div>
@@ -271,18 +429,37 @@
             <div id="target"></div>
         </div>
 
-        <div class="info-text">Entfernung: <span id="distance" style="font-weight: bold; color: #ff6600;">-</span> m</div>
-        <div class="info-text" id="accuracy">GPS-Genauigkeit: -</div>
-        <div class="info-text" id="bearing">Zielrichtung: -</div>
+        <div class="info-text">
+            Entfernung:
+            <span id="distance" style="font-weight: bold; color: #ff6600;">-</span> m
+        </div>
+
+        <div class="info-text" id="accuracy">
+            GPS-Genauigkeit: -
+        </div>
+
+        <div class="info-text" id="bearing">
+            Zielrichtung: -
+        </div>
         
-        <button id="cameraToggleButton" style="background: #ff6600; margin-top: 10px;">📷 KAMERA ANSCHALTEN</button>
+        <button id="cameraToggleButton" style="background: #ff6600; margin-top: 10px;">
+            📷 KAMERA ANSCHALTEN
+        </button>
     </div>
 
     <!-- KAMERA-BILDSCHIRM -->
     <div id="cameraScreen" class="screen">
-        <div id="cameraStationBadge" class="station-badge">STATION 1 VON 5</div>
-        <h3 id="cameraHeaderTitle" style="color: #ff6600; margin-bottom: 3px;">📷 KAMERA-SUCHE</h3>
-        <div id="cameraTimerText" style="font-size: 12px; color: #aaa; margin-bottom: 5px;">Flucht in: 04:00</div>
+        <div id="cameraStationBadge" class="station-badge">
+            STATION 1 VON 5
+        </div>
+
+        <h3 id="cameraHeaderTitle" style="color: #ff6600; margin-bottom: 3px;">
+            📷 KAMERA-SUCHE
+        </h3>
+
+        <div id="cameraTimerText" style="font-size: 12px; color: #aaa; margin-bottom: 5px;">
+            Flucht in: 04:00
+        </div>
         
         <div class="camera-container">
             <video id="camera" autoplay playsinline muted></video>
@@ -296,19 +473,33 @@
         </div>
 
         <div style="margin-top: 5px;">
-            <button id="cameraOffButton" style="background: #ff5252; color: #fff;">📷 ZURÜCK ZUM RADAR</button>
-            <button id="foundButton" disabled style="background: #00ff66; color: #000;">🎯 GEIST EINSAUGEN</button>
+            <button id="cameraOffButton" style="background: #ff5252; color: #fff;">
+                📷 ZURÜCK ZUM RADAR
+            </button>
+
+            <button id="foundButton" disabled style="background: #00ff66; color: #000;">
+                🎯 GEIST EINSAUGEN
+            </button>
         </div>
     </div>
 
     <!-- ERFOLGS-BILDSCHIRM -->
     <div id="success" class="screen">
-        <h1 style="color: #ff6600; font-size: clamp(20px, 5vw, 28px); margin-bottom: 10px;">🎃 GEISTERJAGD BEENDET! 👻</h1>
+        <h1 style="color: #ff6600; font-size: clamp(20px, 5vw, 28px); margin-bottom: 10px;">
+            🎃 GEISTERJAGD BEENDET! 👻
+        </h1>
+
         <p style="margin-bottom: 15px; font-size: 14px; line-height: 1.5;">
-            Du hast alle Geister & Kürbisse erfolgreich eingesaugt!<br><br>
-            <strong style="color: #00ff66;">Nun bist du geprüfter Geisterjäger! 👻</strong>
+            Du hast alle Geister & Kürbisse erfolgreich eingesaugt!
+            <br><br>
+            <strong style="color: #00ff66;">
+                Nun bist du geprüfter Geisterjäger! 👻
+            </strong>
         </p>
-        <button id="again">NEUES TESTSPIEL</button>
+
+        <button id="again">
+            NEUES TESTSPIEL
+        </button>
     </div>
 
 <script>
@@ -341,13 +532,35 @@ let hasPinged = false;
 
 let audioCtx = null;
 
+
+/* =========================================================
+   NEU: REGELWERK AUFKLAPPEN
+   ========================================================= */
+
+function toggleRules() {
+    const panel = document.getElementById("rulesPanel");
+
+    if (panel.style.display === "block") {
+        panel.style.display = "none";
+    } else {
+        panel.style.display = "block";
+    }
+}
+
+
+/* =========================================================
+   BESTEHENDES SPIELSYSTEM – UNVERÄNDERT
+   ========================================================= */
+
 function setPlayRadius(meters) {
     selectedPlayRadius = meters;
     RADAR_RANGE = Math.max(100, meters * 2);
     
     const buttons = document.querySelectorAll('.radius-btn');
+
     buttons.forEach(btn => {
         btn.classList.remove('active');
+
         if(btn.textContent.includes(meters + 'm')) {
             btn.classList.add('active');
         }
@@ -356,41 +569,92 @@ function setPlayRadius(meters) {
 
 function playSonarPing() {
     try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === "suspended") audioCtx.resume();
+        if (!audioCtx)
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        if (audioCtx.state === "suspended")
+            audioCtx.resume();
 
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
+
         osc.type = "sine";
-        osc.frequency.setValueAtTime(1240, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.8);
+
+        osc.frequency.setValueAtTime(
+            1240,
+            audioCtx.currentTime
+        );
+
+        gain.gain.setValueAtTime(
+            0.3,
+            audioCtx.currentTime
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            0.0001,
+            audioCtx.currentTime + 0.8
+        );
+
         osc.connect(gain);
         gain.connect(audioCtx.destination);
+
         osc.start();
         osc.stop(audioCtx.currentTime + 0.8);
-    } catch (e) { console.log("Audio blockiert."); }
+
+    } catch (e) {
+        console.log("Audio blockiert.");
+    }
 }
 
 function playVacuumSound() {
     try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === "suspended") audioCtx.resume();
+        if (!audioCtx)
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        if (audioCtx.state === "suspended")
+            audioCtx.resume();
 
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
+
         osc.type = "sawtooth";
-        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.6);
-        osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 1.2);
-        gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.2);
+
+        osc.frequency.setValueAtTime(
+            150,
+            audioCtx.currentTime
+        );
+
+        osc.frequency.exponentialRampToValueAtTime(
+            600,
+            audioCtx.currentTime + 0.6
+        );
+
+        osc.frequency.exponentialRampToValueAtTime(
+            80,
+            audioCtx.currentTime + 1.2
+        );
+
+        gain.gain.setValueAtTime(
+            0.4,
+            audioCtx.currentTime
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            0.0001,
+            audioCtx.currentTime + 1.2
+        );
+
         osc.connect(gain);
         gain.connect(audioCtx.destination);
+
         osc.start();
         osc.stop(audioCtx.currentTime + 1.2);
-    } catch (e) { console.log("Audio blockiert."); }
+
+    } catch (e) {
+        console.log("Audio blockiert.");
+    }
 }
+
 
 const startScreen = document.getElementById("startScreen");
 const gameScreen = document.getElementById("gameScreen");
@@ -423,19 +687,32 @@ const sweep = document.getElementById("sweep");
 const sweepGlow = document.getElementById("sweepGlow");
 const camera = document.getElementById("camera");
 
+
 function generateTestWaypoints(userLat, userLon) {
     waypoints = [];
+
     const metersPerDegree = 111000;
     
     for (let i = 0; i < TOTAL_STATIONS; i++) {
-        const randomAngle = Math.random() * 2 * Math.PI;
-        const randomDist = 15 + Math.random() * (selectedPlayRadius - 15);
-        
-        const dn = Math.sin(randomAngle) * randomDist;
-        const de = Math.cos(randomAngle) * randomDist;
 
-        const latOffset = dn / metersPerDegree;
-        const lonOffset = de / (metersPerDegree * Math.cos(userLat * Math.PI / 180));
+        const randomAngle = Math.random() * 2 * Math.PI;
+
+        const randomDist =
+            15 + Math.random() * (selectedPlayRadius - 15);
+        
+        const dn =
+            Math.sin(randomAngle) * randomDist;
+
+        const de =
+            Math.cos(randomAngle) * randomDist;
+
+        const latOffset =
+            dn / metersPerDegree;
+
+        const lonOffset =
+            de /
+            (metersPerDegree *
+            Math.cos(userLat * Math.PI / 180));
         
         waypoints.push({
             id: i + 1,
@@ -444,331 +721,793 @@ function generateTestWaypoints(userLat, userLon) {
             icon: HALLOWEEN_ICONS[i]
         });
     }
+
     currentIndex = 0;
 }
 
+
 function relocateCurrentWaypoint() {
-    if (latitude === null || longitude === null) return;
+
+    if (latitude === null || longitude === null)
+        return;
     
     const metersPerDegree = 111000;
-    const randomAngle = Math.random() * 2 * Math.PI;
+
+    const randomAngle =
+        Math.random() * 2 * Math.PI;
+
     const closeDist = 10; 
     
-    const dn = Math.sin(randomAngle) * closeDist;
-    const de = Math.cos(randomAngle) * closeDist;
+    const dn =
+        Math.sin(randomAngle) * closeDist;
 
-    const latOffset = dn / metersPerDegree;
-    const lonOffset = de / (metersPerDegree * Math.cos(latitude * Math.PI / 180));
+    const de =
+        Math.cos(randomAngle) * closeDist;
 
-    waypoints[currentIndex].lat = latitude + latOffset;
-    waypoints[currentIndex].lon = longitude + lonOffset;
+    const latOffset =
+        dn / metersPerDegree;
+
+    const lonOffset =
+        de /
+        (metersPerDegree *
+        Math.cos(latitude * Math.PI / 180));
+
+    waypoints[currentIndex].lat =
+        latitude + latOffset;
+
+    waypoints[currentIndex].lon =
+        longitude + lonOffset;
 
     timeLeft = ESCAPE_TIME_SECONDS;
-    alert("⚡ Die Zeit ist um! Der Geist nähert sich entkräftet auf 10 Meter und ist jetzt direkt in deiner Reichweite!");
+
+    alert(
+        "⚡ Die Zeit ist um! Der Geist nähert sich entkräftet auf 10 Meter und ist jetzt direkt in deiner Reichweite!"
+    );
+
     updateGame();
 }
 
+
 function startEscapeTimer() {
-    if (escapeTimerInterval) clearInterval(escapeTimerInterval);
+
+    if (escapeTimerInterval)
+        clearInterval(escapeTimerInterval);
+
     timeLeft = ESCAPE_TIME_SECONDS;
 
     escapeTimerInterval = setInterval(() => {
+
         timeLeft--;
         
-        let mins = Math.floor(timeLeft / 60);
-        let secs = timeLeft % 60;
-        let timeStr = "Flucht in: " + (mins < 10 ? "0" : "") + mins + ":" + (secs < 10 ? "0" : "") + secs;
+        let mins =
+            Math.floor(timeLeft / 60);
+
+        let secs =
+            timeLeft % 60;
+
+        let timeStr =
+            "Flucht in: " +
+            (mins < 10 ? "0" : "") +
+            mins +
+            ":" +
+            (secs < 10 ? "0" : "") +
+            secs;
         
-        escapeTimerText.textContent = timeStr;
-        cameraTimerText.textContent = timeStr;
+        escapeTimerText.textContent =
+            timeStr;
+
+        cameraTimerText.textContent =
+            timeStr;
 
         if (timeLeft <= 0) {
-            clearInterval(escapeTimerInterval);
+
+            clearInterval(
+                escapeTimerInterval
+            );
+
             relocateCurrentWaypoint();
+
             startEscapeTimer();
         }
+
     }, 1000);
 }
 
-startButton.addEventListener("click", () => {
-    startGame();
-});
+
+startButton.addEventListener(
+    "click",
+    () => {
+        startGame();
+    }
+);
+
 
 function startGame(){
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    if (!audioCtx)
+        audioCtx =
+            new (window.AudioContext ||
+            window.webkitAudioContext)();
 
     if ("geolocation" in navigator) {
+
         navigator.geolocation.watchPosition(
+
             (pos) => {
-                latitude = pos.coords.latitude;
-                longitude = pos.coords.longitude;
-                accuracy = Math.round(pos.coords.accuracy);
+
+                latitude =
+                    pos.coords.latitude;
+
+                longitude =
+                    pos.coords.longitude;
+
+                accuracy =
+                    Math.round(
+                        pos.coords.accuracy
+                    );
                 
                 if (waypoints.length === 0) {
-                    generateTestWaypoints(latitude, longitude);
-                    startScreen.style.display = "none";
-                    gameScreen.style.display = "flex";
+
+                    generateTestWaypoints(
+                        latitude,
+                        longitude
+                    );
+
+                    startScreen.style.display =
+                        "none";
+
+                    gameScreen.style.display =
+                        "flex";
+
                     startRadar();
+
                     startEscapeTimer();
                 }
+
                 updateGame();
             },
-            (err) => { alert("GPS konnte nicht abgerufen werden. Bitte Standort freigeben."); },
-            { enableHighAccuracy: true, maximumAge: 1000, timeout: 5000 }
+
+            (err) => {
+
+                alert(
+                    "GPS konnte nicht abgerufen werden. Bitte Standort freigeben."
+                );
+            },
+
+            {
+                enableHighAccuracy: true,
+                maximumAge: 1000,
+                timeout: 5000
+            }
         );
     }
 
     if (window.DeviceOrientationEvent) {
-        window.addEventListener("deviceorientation", (e) => {
-            if (e.webkitCompassHeading) heading = e.webkitCompassHeading;
-            else if (e.alpha) heading = 360 - e.alpha;
-            updateRadar();
-            updateCameraOverlay();
-        }, true);
+
+        window.addEventListener(
+            "deviceorientation",
+            (e) => {
+
+                if (e.webkitCompassHeading)
+                    heading =
+                        e.webkitCompassHeading;
+
+                else if (e.alpha)
+                    heading =
+                        360 - e.alpha;
+
+                updateRadar();
+                updateCameraOverlay();
+
+            },
+            true
+        );
     }
 }
 
+
 function updateGame(){
-    if(latitude === null || longitude === null || waypoints.length === 0) return;
 
-    const currentTarget = waypoints[currentIndex];
-    const distance = calculateDistance(latitude, longitude, currentTarget.lat, currentTarget.lon);
-    targetBearing = calculateBearing(latitude, longitude, currentTarget.lat, currentTarget.lon);
+    if (
+        latitude === null ||
+        longitude === null ||
+        waypoints.length === 0
+    )
+        return;
 
-    const distRounded = Math.round(distance);
-    distanceOutput.textContent = distRounded;
-    accuracyOutput.textContent = "GPS-Genauigkeit: ±" + accuracy + " m";
-    bearingOutput.textContent = "Zielrichtung: " + Math.round(targetBearing) + "°";
+    const currentTarget =
+        waypoints[currentIndex];
+
+    const distance =
+        calculateDistance(
+            latitude,
+            longitude,
+            currentTarget.lat,
+            currentTarget.lon
+        );
+
+    targetBearing =
+        calculateBearing(
+            latitude,
+            longitude,
+            currentTarget.lat,
+            currentTarget.lon
+        );
+
+    const distRounded =
+        Math.round(distance);
+
+    distanceOutput.textContent =
+        distRounded;
+
+    accuracyOutput.textContent =
+        "GPS-Genauigkeit: ±" +
+        accuracy +
+        " m";
+
+    bearingOutput.textContent =
+        "Zielrichtung: " +
+        Math.round(targetBearing) +
+        "°";
     
-    const badgeText = `STATION ${currentIndex + 1} VON ${TOTAL_STATIONS}`;
-    stationBadge.textContent = badgeText;
-    cameraStationBadge.textContent = badgeText;
+    const badgeText =
+        `STATION ${currentIndex + 1} VON ${TOTAL_STATIONS}`;
 
-    if(distance <= TARGET_RADIUS){
-        status.textContent = "🎯 GEIST/KÜRBIS ERREICHT!";
-        status.style.color = "#00ff66";
+    stationBadge.textContent =
+        badgeText;
+
+    cameraStationBadge.textContent =
+        badgeText;
+
+    if (distance <= TARGET_RADIUS) {
+
+        status.textContent =
+            "🎯 GEIST/KÜRBIS ERREICHT!";
+
+        status.style.color =
+            "#00ff66";
+
     } else {
-        status.textContent = "🔎 GEIST SUCHEN";
-        status.style.color = "#ff6600";
+
+        status.textContent =
+            "🔎 GEIST SUCHEN";
+
+        status.style.color =
+            "#ff6600";
     }
 
     updateRadar();
     updateCameraOverlay();
 }
 
+
 function updateRadar(){
-    if(latitude === null || longitude === null || waypoints.length === 0) return;
 
-    const currentTarget = waypoints[currentIndex];
-    const distance = calculateDistance(latitude, longitude, currentTarget.lat, currentTarget.lon);
-    const size = radar.clientWidth;
-    const center = size / 2;
+    if (
+        latitude === null ||
+        longitude === null ||
+        waypoints.length === 0
+    )
+        return;
 
-    let radius = (distance / RADAR_RANGE) * center;
-    radius = Math.min(radius, center - 10);
+    const currentTarget =
+        waypoints[currentIndex];
 
-    targetAngleRelative = normalize(targetBearing - heading);
-    const radians = targetAngleRelative * Math.PI / 180;
+    const distance =
+        calculateDistance(
+            latitude,
+            longitude,
+            currentTarget.lat,
+            currentTarget.lon
+        );
 
-    target.style.left = (center + Math.sin(radians) * radius) + "px";
-    target.style.top = (center - Math.cos(radians) * radius) + "px";
+    const size =
+        radar.clientWidth;
+
+    const center =
+        size / 2;
+
+    let radius =
+        (distance / RADAR_RANGE) *
+        center;
+
+    radius =
+        Math.min(
+            radius,
+            center - 10
+        );
+
+    targetAngleRelative =
+        normalize(
+            targetBearing - heading
+        );
+
+    const radians =
+        targetAngleRelative *
+        Math.PI / 180;
+
+    target.style.left =
+        (center +
+        Math.sin(radians) *
+        radius) + "px";
+
+    target.style.top =
+        (center -
+        Math.cos(radians) *
+        radius) + "px";
 }
 
-function updateCameraOverlay() {
-    if (!isCameraActive || latitude === null || longitude === null || waypoints.length === 0 || isSucking) return;
 
-    const currentTarget = waypoints[currentIndex];
-    const distance = calculateDistance(latitude, longitude, currentTarget.lat, currentTarget.lon);
-    const distRounded = Math.round(distance);
+function updateCameraOverlay(){
 
-    targetAngleRelative = normalize(targetBearing - heading);
-    cameraArrow.style.transform = `rotate(${targetAngleRelative}deg)`;
-    cameraDistText.textContent = distRounded + " m";
+    if (
+        !isCameraActive ||
+        latitude === null ||
+        longitude === null ||
+        waypoints.length === 0 ||
+        isSucking
+    )
+        return;
 
-    arObject.textContent = currentTarget.icon;
+    const currentTarget =
+        waypoints[currentIndex];
+
+    const distance =
+        calculateDistance(
+            latitude,
+            longitude,
+            currentTarget.lat,
+            currentTarget.lon
+        );
+
+    const distRounded =
+        Math.round(distance);
+
+    targetAngleRelative =
+        normalize(
+            targetBearing - heading
+        );
+
+    cameraArrow.style.transform =
+        `rotate(${targetAngleRelative}deg)`;
+
+    cameraDistText.textContent =
+        distRounded + " m";
+
+    arObject.textContent =
+        currentTarget.icon;
 
     if (distance <= TARGET_RADIUS) {
-        cameraHeaderTitle.textContent = "🎯 JETZT EINSAUGEN!";
-        cameraHeaderTitle.style.color = "#00ff66";
-        arObject.style.opacity = "1";
-        arObject.style.fontSize = "90px";
+
+        cameraHeaderTitle.textContent =
+            "🎯 JETZT EINSAUGEN!";
+
+        cameraHeaderTitle.style.color =
+            "#00ff66";
+
+        arObject.style.opacity =
+            "1";
+
+        arObject.style.fontSize =
+            "90px";
         
-        foundButton.disabled = false;
-        foundButton.style.background = "#00ff66";
+        foundButton.disabled =
+            false;
+
+        foundButton.style.background =
+            "#00ff66";
+
     } else {
-        foundButton.disabled = true;
+
+        foundButton.disabled =
+            true;
         
         if (distance <= 30) {
-            cameraHeaderTitle.textContent = "📷 NÄHER HERANGEHEN!";
-            cameraHeaderTitle.style.color = "#ff6600";
-            arObject.style.opacity = "0.7";
-            arObject.style.fontSize = "65px";
+
+            cameraHeaderTitle.textContent =
+                "📷 NÄHER HERANGEHEN!";
+
+            cameraHeaderTitle.style.color =
+                "#ff6600";
+
+            arObject.style.opacity =
+                "0.7";
+
+            arObject.style.fontSize =
+                "65px";
+
         } else {
-            cameraHeaderTitle.textContent = "📷 ZU WEIT ENTFERNT";
-            cameraHeaderTitle.style.color = "#ff6600";
-            arObject.style.opacity = "0.35";
-            arObject.style.fontSize = "45px";
+
+            cameraHeaderTitle.textContent =
+                "📷 ZU WEIT ENTFERNT";
+
+            cameraHeaderTitle.style.color =
+                "#ff6600";
+
+            arObject.style.opacity =
+                "0.35";
+
+            arObject.style.fontSize =
+                "45px";
         }
     }
 }
 
+
 function startRadar(){
+
     if(radarAnimation !== null){
-        cancelAnimationFrame(radarAnimation);
+
+        cancelAnimationFrame(
+            radarAnimation
+        );
+
         radarAnimation = null;
     }
 
     function animate(){
+
         sweepAngle += 2.08;
-        if(sweepAngle >= 360) sweepAngle = 0;
 
-        sweep.style.transform = "rotate(" + sweepAngle + "deg)";
-        sweepGlow.style.transform = "rotate(" + sweepAngle + "deg)";
+        if(sweepAngle >= 360)
+            sweepAngle = 0;
 
-        let angleDiff = Math.abs(sweepAngle - targetAngleRelative);
-        if (angleDiff > 180) angleDiff = 360 - angleDiff;
+        sweep.style.transform =
+            "rotate(" +
+            sweepAngle +
+            "deg)";
+
+        sweepGlow.style.transform =
+            "rotate(" +
+            sweepAngle +
+            "deg)";
+
+        let angleDiff =
+            Math.abs(
+                sweepAngle -
+                targetAngleRelative
+            );
+
+        if (angleDiff > 180)
+            angleDiff =
+                360 - angleDiff;
 
         if (angleDiff < 12) {
-            target.style.opacity = "1";
+
+            target.style.opacity =
+                "1";
+
             if (!hasPinged) {
+
                 playSonarPing();
+
                 hasPinged = true;
             }
+
         } else {
-            target.style.opacity = "0";
-            if (angleDiff > 30) hasPinged = false;
+
+            target.style.opacity =
+                "0";
+
+            if (angleDiff > 30)
+                hasPinged = false;
         }
 
-        radarAnimation = requestAnimationFrame(animate);
+        radarAnimation =
+            requestAnimationFrame(
+                animate
+            );
     }
+
     animate();
 }
 
-cameraToggleButton.addEventListener("click", toggleCamera);
-cameraOffButton.addEventListener("click", toggleCamera);
+
+cameraToggleButton.addEventListener(
+    "click",
+    toggleCamera
+);
+
+cameraOffButton.addEventListener(
+    "click",
+    toggleCamera
+);
+
 
 async function toggleCamera(){
+
     if (!isCameraActive) {
+
         try {
+
             try {
-                cameraStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { exact: "environment" } },
-                    audio: false
-                });
+
+                cameraStream =
+                    await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: {
+                                exact: "environment"
+                            }
+                        },
+                        audio: false
+                    });
+
             } catch (err) {
-                cameraStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "environment" },
-                    audio: false
-                });
+
+                cameraStream =
+                    await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: "environment"
+                        },
+                        audio: false
+                    });
             }
             
-            camera.srcObject = cameraStream;
-            isCameraActive = true;
+            camera.srcObject =
+                cameraStream;
+
+            isCameraActive =
+                true;
             
-            gameScreen.style.display = "none";
-            cameraScreen.style.display = "flex";
+            gameScreen.style.display =
+                "none";
+
+            cameraScreen.style.display =
+                "flex";
+
             updateCameraOverlay();
+
         } catch(error) {
-            alert("Kamera-Fehler: " + error.message + "\nBitte Kamera-Berechtigung erteilen.");
+
+            alert(
+                "Kamera-Fehler: " +
+                error.message +
+                "\nBitte Kamera-Berechtigung erteilen."
+            );
         }
+
     } else {
+
         stopCamera();
-        isCameraActive = false;
-        cameraScreen.style.display = "none";
-        gameScreen.style.display = "flex";
+
+        isCameraActive =
+            false;
+
+        cameraScreen.style.display =
+            "none";
+
+        gameScreen.style.display =
+            "flex";
     }
 }
 
-foundButton.addEventListener("click", function(){
-    if (isSucking || foundButton.disabled) return;
-    
-    isSucking = true;
-    foundButton.disabled = true;
-    
-    playVacuumSound();
-    arObject.classList.add("sucking");
 
-    setTimeout(() => {
-        arObject.classList.remove("sucking");
-        isSucking = false;
-        advanceToNextStation();
-    }, 1200);
-});
+foundButton.addEventListener(
+    "click",
+    function(){
+
+        if (
+            isSucking ||
+            foundButton.disabled
+        )
+            return;
+        
+        isSucking =
+            true;
+
+        foundButton.disabled =
+            true;
+        
+        playVacuumSound();
+
+        arObject.classList.add(
+            "sucking"
+        );
+
+        setTimeout(() => {
+
+            arObject.classList.remove(
+                "sucking"
+            );
+
+            isSucking =
+                false;
+
+            advanceToNextStation();
+
+        }, 1200);
+    }
+);
+
 
 function advanceToNextStation() {
+
     currentIndex++;
     
     if (currentIndex >= TOTAL_STATIONS) {
-        if (escapeTimerInterval) clearInterval(escapeTimerInterval);
+
+        if (escapeTimerInterval)
+            clearInterval(
+                escapeTimerInterval
+            );
+
         stopCamera();
-        isCameraActive = false;
-        cameraScreen.style.display = "none";
-        gameScreen.style.display = "none";
-        success.style.display = "flex";
+
+        isCameraActive =
+            false;
+
+        cameraScreen.style.display =
+            "none";
+
+        gameScreen.style.display =
+            "none";
+
+        success.style.display =
+            "flex";
+
     } else {
+
         startEscapeTimer();
+
         if (isCameraActive) {
+
             stopCamera();
-            isCameraActive = false;
-            cameraScreen.style.display = "none";
-            gameScreen.style.display = "flex";
+
+            isCameraActive =
+                false;
+
+            cameraScreen.style.display =
+                "none";
+
+            gameScreen.style.display =
+                "flex";
         }
+
         updateGame();
     }
 }
 
+
 function stopCamera(){
+
     if(cameraStream){
-        cameraStream.getTracks().forEach(track => track.stop());
-        cameraStream = null;
-        camera.srcObject = null;
+
+        cameraStream
+            .getTracks()
+            .forEach(
+                track => track.stop()
+            );
+
+        cameraStream =
+            null;
+
+        camera.srcObject =
+            null;
     }
 }
 
-againButton.addEventListener("click", function(){
-    success.style.display = "none";
-    waypoints = [];
-    if (latitude !== null && longitude !== null) {
-        generateTestWaypoints(latitude, longitude);
+
+againButton.addEventListener(
+    "click",
+    function(){
+
+        success.style.display =
+            "none";
+
+        waypoints = [];
+
+        if (
+            latitude !== null &&
+            longitude !== null
+        ) {
+
+            generateTestWaypoints(
+                latitude,
+                longitude
+            );
+        }
+
+        gameScreen.style.display =
+            "flex";
+
+        startRadar();
+
+        startEscapeTimer();
+
+        updateGame();
     }
-    gameScreen.style.display = "flex";
-    startRadar();
-    startEscapeTimer();
-    updateGame();
-});
+);
 
-function calculateDistance(lat1, lon1, lat2, lon2){
+
+function calculateDistance(
+    lat1,
+    lon1,
+    lat2,
+    lon2
+){
+
     const R = 6371000;
-    const p1 = lat1 * Math.PI / 180;
-    const p2 = lat2 * Math.PI / 180;
-    const dp = (lat2-lat1) * Math.PI / 180;
-    const dl = (lon2-lon1) * Math.PI / 180;
 
-    const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const p1 =
+        lat1 * Math.PI / 180;
+
+    const p2 =
+        lat2 * Math.PI / 180;
+
+    const dp =
+        (lat2 - lat1) *
+        Math.PI / 180;
+
+    const dl =
+        (lon2 - lon1) *
+        Math.PI / 180;
+
+    const a =
+        Math.sin(dp / 2) *
+        Math.sin(dp / 2) +
+        Math.cos(p1) *
+        Math.cos(p2) *
+        Math.sin(dl / 2) *
+        Math.sin(dl / 2);
+
+    const c =
+        2 *
+        Math.atan2(
+            Math.sqrt(a),
+            Math.sqrt(1 - a)
+        );
+
     return R * c;
 }
 
-function calculateBearing(lat1, lon1, lat2, lon2){
-    const p1 = lat1 * Math.PI / 180;
-    const p2 = lat2 * Math.PI / 180;
-    const dl = (lon2-lon1) * Math.PI / 180;
 
-    const y = Math.sin(dl) * Math.cos(p2);
-    const x = Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(dl);
+function calculateBearing(
+    lat1,
+    lon1,
+    lat2,
+    lon2
+){
 
-    return normalize(Math.atan2(y,x) * 180 / Math.PI);
+    const p1 =
+        lat1 * Math.PI / 180;
+
+    const p2 =
+        lat2 * Math.PI / 180;
+
+    const dl =
+        (lon2 - lon1) *
+        Math.PI / 180;
+
+    const y =
+        Math.sin(dl) *
+        Math.cos(p2);
+
+    const x =
+        Math.cos(p1) *
+        Math.sin(p2) -
+        Math.sin(p1) *
+        Math.cos(p2) *
+        Math.cos(dl);
+
+    return normalize(
+        Math.atan2(y, x) *
+        180 / Math.PI
+    );
 }
 
+
 function normalize(value){
-    value = value % 360;
-    if(value < 0) value += 360;
+
+    value =
+        value % 360;
+
+    if(value < 0)
+        value += 360;
+
     return value;
 }
 </script>
 
 </body>
 </html>
-
----
-Dieser Text/Dieses Bild/Dieses Video/… wurde unter Zuhilfenahme einer Künstlichen Intelligenz erstellt und von einem Menschen überprüft.
+```
